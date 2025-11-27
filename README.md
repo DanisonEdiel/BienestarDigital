@@ -1,50 +1,68 @@
-# Welcome to your Expo app 👋
+# EcuDiesel – App móvil (Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para controlar el consumo de diésel. Arquitectura preparada para integrar un backend posteriormente sin reescrituras en el front.
 
-## Get started
+## Estado actual
 
-1. Install dependencies
+- Router con **Stack + Drawer** (`app/_layout.tsx`, `app/(drawer)/_layout.tsx`).
+- Onboarding de **3 pasos** y splash (`app/index.tsx`).
+- UI con **React Native Paper** y tema claro/oscuro MD3.
+- Datos con **Axios** + **TanStack React Query** (`lib/api.ts`, `hooks/use-data.ts`).
+- Autenticación con **Clerk**:
+  - Login email/contraseña y **OAuth Google**.
+  - Protección de rutas: `SignedIn`/`SignedOut` con redirect a `'/auth/sign-in'`.
+  - Manejo seguro de tokens con `expo-secure-store`.
+- Callback OAuth manejado en `app/oauth-native-callback.tsx` para cerrar el popup y activar sesión.
 
-   ```bash
-   npm install
-   ```
+## Objetivo final
 
-2. Start the app
+- Dashboard de estadísticas de consumo (promedios, tendencias, alertas).
+- Integración backend real (endpoints, validación de token `Bearer`).
+- Gestión de flotas y estaciones, registros de repostaje, reportes.
+- Roles/permisos y notificaciones.
 
-   ```bash
-   npx expo start
-   ```
+## Ejecutar
 
-In the output, you'll find options to open the app in a
+- Instalar dependencias:
+  
+  ```bash
+  npm install
+  ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Iniciar en desarrollo:
+  
+  ```bash
+  npx expo start
+  ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Variables de entorno
 
-## Get a fresh project
+- `EXPO_PUBLIC_API_URL`: base URL del backend (mock por ahora).
+- `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`: clave publicable de Clerk.
 
-When you're ready, run:
+## Configuración de Clerk (dev)
 
-```bash
-npm run reset-project
-```
+- Habilita Google OAuth en el Dashboard.
+- Allowlist de Redirect URLs:
+  - Web: `http://localhost:8081/--/oauth-native-callback`
+  - Expo Go: `exp://<IP>:<PORT>/--/oauth-native-callback`
+  - Dev build nativo: `hambapp://oauth-native-callback`
+- Si hay bloqueos de CAPTCHA/Turnstile en dev, desactívalo temporalmente o usa Chrome sin bloqueos.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Estructura relevante
 
-## Learn more
+- `app/_layout.tsx`: Providers (Clerk, Paper, React Query) y navegación raíz.
+- `app/(drawer)/_layout.tsx`: Drawer con `Stats`, `Settings`.
+- `app/index.tsx`: onboarding y redirección a `'/auth/sign-in'`.
+- `app/auth/*`: `sign-in`, `sign-up`, `verify-email` y callback OAuth.
+- `lib/api.ts`: cliente Axios.
+- `hooks/use-data.ts`: hook genérico con React Query.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Flujo de navegación
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Onboarding → Login (`/auth/sign-in`) → Drawer (`/(drawer)`).
+- En sesión activa, se redirige automáticamente al Drawer.
 
-## Join the community
+## Notas
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Cuando se agregue el backend: añadir validación del token, endpoints reales y roles. El front ya deja espacio para enviar `Authorization: Bearer <token>`.
