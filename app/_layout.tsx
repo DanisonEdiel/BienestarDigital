@@ -7,7 +7,7 @@ import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-na
 import { ClerkProvider } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
-import { Colors } from '@/constants/theme';
+import { Colors, Palette } from '@/constants/theme';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -25,9 +25,17 @@ export default function RootLayout() {
     },
   });
 
-  const paperTheme = colorScheme === 'dark'
-    ? { ...MD3DarkTheme, colors: { ...MD3DarkTheme.colors, primary: Colors.dark.tint } }
-    : { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, primary: Colors.light.tint } };
+  const base = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
+  const paperTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: Palette.primary,
+      background: colorScheme === 'dark' ? Palette.backgroundDark : Palette.backgroundLight,
+      surface: colorScheme === 'dark' ? Palette.surfaceDark : Palette.surfaceLight,
+      onSurface: colorScheme === 'dark' ? Colors.dark.text : Colors.light.text,
+    },
+  };
 
   return (
     <ClerkProvider

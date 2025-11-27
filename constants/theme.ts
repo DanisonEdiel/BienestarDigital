@@ -5,25 +5,45 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const Palette = {
+  primary: '#2D6CF6',
+  primaryDark: '#1E4ED8',
+  secondary: '#6C7593',
+  backgroundLight: '#F7F9FC',
+  backgroundDark: '#0F1115',
+  surfaceLight: '#FFFFFF',
+  surfaceDark: '#1B1E24',
+  textLight: '#11181C',
+  textDark: '#ECEDEE',
+  iconLight: '#687076',
+  iconDark: '#9BA1A6',
+  error: '#D32F2F',
+  success: '#2E7D32',
+};
+
+export const Gradients = {
+  headerLight: ['#E8F0FF', '#F7FAFF'],
+  cardLight: ['#FFFFFF', '#EEF4FF'],
+  headerDark: ['#1A2230', '#0F1115'],
+  cardDark: ['#1B1E24', '#12161E'],
+};
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: Palette.textLight,
+    background: Palette.backgroundLight,
+    tint: Palette.primary,
+    icon: Palette.iconLight,
+    tabIconDefault: Palette.iconLight,
+    tabIconSelected: Palette.primary,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: Palette.textDark,
+    background: Palette.backgroundDark,
+    tint: '#FFFFFF',
+    icon: Palette.iconDark,
+    tabIconDefault: Palette.iconDark,
+    tabIconSelected: '#FFFFFF',
   },
 };
 
