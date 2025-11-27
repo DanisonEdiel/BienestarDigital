@@ -11,7 +11,7 @@ export default function DataScreen() {
   if (isLoading) {
     return (
       <ThemedView style={styles.center}>
-        <ThemedText>Loading...</ThemedText>
+        <ThemedText>Cargando webonazo...</ThemedText>
       </ThemedView>
     );
   }
@@ -19,7 +19,7 @@ export default function DataScreen() {
   if (error) {
     return (
       <ThemedView style={styles.center}>
-        <ThemedText>Error</ThemedText>
+        <ThemedText>weso</ThemedText>
       </ThemedView>
     );
   }
