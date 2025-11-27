@@ -50,7 +50,7 @@ export default function Onboarding() {
       setIndex(i);
       listRef.current?.scrollToIndex({ index: i, animated: true });
     } else {
-      router.replace('/(drawer)/stats');
+      router.replace('/auth/sign-in');
     }
   };
 

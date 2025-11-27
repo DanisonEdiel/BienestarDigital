@@ -4,6 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
+import { ClerkProvider } from '@clerk/clerk-expo';
+import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
 import { Colors } from '@/constants/theme';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -11,6 +14,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export const unstable_settings = {};
 
 export default function RootLayout() {
+  WebBrowser.maybeCompleteAuthSession();
   const colorScheme = useColorScheme();
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -26,16 +30,25 @@ export default function RootLayout() {
     : { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, primary: Colors.light.tint } };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <PaperProvider theme={paperTheme}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack initialRouteName="index">
-          <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </PaperProvider>
-    </QueryClientProvider>
+    <ClerkProvider
+      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string}
+      tokenCache={{
+        getToken: (key) => SecureStore.getItemAsync(key),
+        saveToken: (key, value) => SecureStore.setItemAsync(key, value ?? ''),
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <PaperProvider theme={paperTheme}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack initialRouteName="index">
+              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              <Stack.Screen name="auth" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </PaperProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }
