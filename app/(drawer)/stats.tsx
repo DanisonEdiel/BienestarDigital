@@ -1,8 +1,9 @@
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useData } from '@/hooks/use-data';
 import { StyleSheet } from 'react-native';
 import { Card, List } from 'react-native-paper';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { useData } from '@/hooks/use-data';
+import { SignOutButton } from '../components/SignOutButton';
 
 type DieselStats = {
   totalLiters: number;
@@ -52,6 +53,7 @@ export default function StatsScreen() {
           ))}
         </Card.Content>
       </Card>
+      <SignOutButton />
     </ThemedView>
   );
 }

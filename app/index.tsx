@@ -1,10 +1,11 @@
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useAuth } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
+import { Redirect, router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
 
 const { width } = Dimensions.get('window');
 
@@ -41,8 +42,13 @@ const STEPS: Step[] = [
 ];
 
 export default function Onboarding() {
+  const { isSignedIn } = useAuth();
   const [index, setIndex] = useState(0);
   const listRef = useRef<FlatList<Step>>(null);
+
+  if (isSignedIn) {
+    return <Redirect href={'/(drawer)/stats'} />;
+  }
 
   const next = () => {
     if (index < STEPS.length - 1) {

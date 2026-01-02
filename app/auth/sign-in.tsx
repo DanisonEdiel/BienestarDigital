@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { View } from 'react-native';
-import { Button, HelperText, TextInput, Checkbox } from 'react-native-paper';
-import { useSignIn, useOAuth } from '@clerk/clerk-expo';
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { router, Link } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import * as Linking from 'expo-linking';
-import { signInStyles as styles } from '@/styles/auth';
+import { ThemedView } from '@/components/themed-view';
 import { Gradients } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { signInStyles as styles } from '@/styles/auth';
+import { useOAuth, useSignIn } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Linking from 'expo-linking';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { Button, Checkbox, HelperText, TextInput } from 'react-native-paper';
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -85,7 +85,9 @@ export default function SignInScreen() {
         try {
           setError(null);
           const redirectUrl = Linking.createURL('/oauth-native-callback');
+          console.log('Redirect URL:', redirectUrl);
           const { createdSessionId, setActive, signIn, signUp } = await startOAuthFlow({ redirectUrl });
+
           if (createdSessionId) {
             await setActive!({ session: createdSessionId });
             router.replace('/(drawer)/stats');
@@ -95,12 +97,25 @@ export default function SignInScreen() {
           } else if (signUp?.createdSessionId) {
             await setActive!({ session: signUp.createdSessionId });
             router.replace('/(drawer)/stats');
+          } else {
+            console.log('OAuth flow incomplete', { signIn, signUp });
+            if (signUp && signUp.status === 'missing_requirements') {
+              const missing = signUp.missingFields?.join(', ') || '';
+              if (missing.includes('username')) {
+                 setError('Error: Clerk requiere un "Username". Desactívalo en el Dashboard de Clerk (User & Authentication > Email, Phone, Username) o implementa el campo.');
+              } else {
+                 setError(`Faltan datos para completar el registro: ${missing}`);
+              }
+            } else {
+              setError('No se pudo completar el inicio de sesión.');
+            }
           }
         } catch (e: any) {
+          console.error('OAuth Error:', JSON.stringify(e, null, 2));
           setError(e?.errors?.[0]?.message ?? 'No se pudo iniciar con Google');
         }
-      }} style={styles.socialBtn}>
-        Google
+      }}>
+        Ingresa con Google
       </Button>
     </ThemedView>
   );
