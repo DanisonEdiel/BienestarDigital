@@ -1,7 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { colors } from '@/constants/theme/colors';
 import { useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
@@ -20,23 +22,23 @@ type Step = {
 const STEPS: Step[] = [
   {
     key: 'welcome',
-    icon: 'speedometer',
-    title: 'Bienvenido a EcuDiesel',
-    subtitle: 'Monitorea consumo y rendimiento de diésel.',
+    icon: 'hourglass-outline',
+    title: 'Bienestar Digital',
+    subtitle: 'Recupera el control de tu tiempo y atención.',
     cta: 'Empezar',
   },
   {
-    key: 'fast',
-    icon: 'stats-chart',
-    title: 'Rápido y confiable',
-    subtitle: 'Estadísticas y alertas en tiempo real.',
+    key: 'focus',
+    icon: 'leaf-outline',
+    title: 'Desconecta para conectar',
+    subtitle: 'Reduce el estrés y mejora tu presencia en el mundo real.',
     cta: 'Continuar',
   },
   {
-    key: 'saving',
-    icon: 'cash',
-    title: 'Ahorra combustible',
-    subtitle: 'Optimiza rutas y carga eficiente.',
+    key: 'stats',
+    icon: 'bar-chart-outline',
+    title: 'Visualiza tu progreso',
+    subtitle: 'Estadísticas claras para entender tus hábitos digitales.',
     cta: 'Entrar',
   },
 ];
@@ -76,7 +78,12 @@ export default function Onboarding() {
         renderItem={({ item }) => (
           <View style={[styles.page, { width }]}>
             <View style={styles.iconWrap}>
-              <Ionicons name={item.icon} size={120} color="#0a7ea4" />
+               <LinearGradient
+                  colors={['#E0EBFF', '#F5F9FF']}
+                  style={styles.iconBackground}
+                >
+                  <Ionicons name={item.icon} size={80} color={colors.primary} />
+                </LinearGradient>
             </View>
             <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
             <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
@@ -85,7 +92,14 @@ export default function Onboarding() {
                 <View key={i} style={[styles.dot, i === index ? styles.dotActive : undefined]} />
               ))}
             </View>
-            <Button mode="contained" onPress={next} style={styles.button}>
+            <Button 
+              mode="contained" 
+              onPress={next} 
+              style={styles.button}
+              contentStyle={{ height: 50 }}
+              labelStyle={{ fontSize: 16, fontWeight: '600' }}
+              buttonColor={colors.primary}
+            >
               {item.cta}
             </Button>
           </View>
@@ -96,42 +110,53 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: colors.background },
   page: {
     flex: 1,
-    paddingHorizontal: 24,
+    alignItems: 'center',
     justifyContent: 'center',
+    padding: 32,
   },
   iconWrap: {
+    marginBottom: 40,
+  },
+  iconBackground: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'center',
   },
   title: {
+    fontSize: 28,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
+    color: colors.textPrimary,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 24,
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 48,
+    lineHeight: 24,
   },
   dots: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    marginBottom: 32,
     gap: 8,
-    marginBottom: 24,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#C9D1D9',
+    backgroundColor: '#E5E5EA',
   },
   dotActive: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: colors.primary,
+    width: 24,
   },
   button: {
-    alignSelf: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 8,
+    width: '100%',
+    borderRadius: 16,
   },
 });
