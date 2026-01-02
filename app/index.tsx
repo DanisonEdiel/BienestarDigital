@@ -47,7 +47,7 @@ export default function Onboarding() {
   const listRef = useRef<FlatList<Step>>(null);
 
   if (isSignedIn) {
-    return <Redirect href={'/(drawer)/stats'} />;
+    return <Redirect href={'/(tabs)/home'} />;
   }
 
   const next = () => {

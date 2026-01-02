@@ -90,13 +90,13 @@ export default function SignInScreen() {
 
           if (createdSessionId) {
             await setActive!({ session: createdSessionId });
-            router.replace('/(drawer)/stats');
+            router.replace('/(tabs)/home');
           } else if (signIn?.createdSessionId) {
             await setActive!({ session: signIn.createdSessionId });
-            router.replace('/(drawer)/stats');
+            router.replace('/(tabs)/home');
           } else if (signUp?.createdSessionId) {
             await setActive!({ session: signUp.createdSessionId });
-            router.replace('/(drawer)/stats');
+            router.replace('/(tabs)/home');
           } else {
             console.log('OAuth flow incomplete', { signIn, signUp });
             if (signUp && signUp.status === 'missing_requirements') {

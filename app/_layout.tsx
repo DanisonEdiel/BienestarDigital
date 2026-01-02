@@ -46,7 +46,7 @@ export default function RootLayout() {
         <PaperProvider theme={paperTheme}>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack initialRouteName="index">
-              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
               <Stack.Screen name="auth" options={{ headerShown: false }} />
             </Stack>

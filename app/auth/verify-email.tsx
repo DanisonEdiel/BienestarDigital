@@ -21,7 +21,7 @@ export default function VerifyEmailScreen() {
       if (!isLoaded) return;
       const res = await signUp!.attemptEmailAddressVerification({ code });
       await setActive!({ session: res.createdSessionId });
-      router.replace('/(drawer)/stats');
+      router.replace('/(tabs)/home');
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Código inválido');
     }
