@@ -4,9 +4,9 @@ import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
-import { UsageChart } from '@/app/components/Analytics/UsageChart';
-import { StatSummaryRow } from '@/app/components/Analytics/StatSummaryRow';
-import { AppUsageList } from '@/app/components/Analytics/AppUsageList';
+import { UsageChart } from '@/components/Analytics/UsageChart';
+import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
+import { AppUsageList } from '@/components/Analytics/AppUsageList';
 
 // Dummy Data
 const CHART_DATA = [

@@ -5,9 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useClerk } from '@clerk/clerk-expo';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
-import { TimeLimitInput } from '@/app/components/Settings/TimeLimitInput';
-import { StrictnessSelector } from '@/app/components/Settings/StrictnessSelector';
-import { GradientButton } from '@/app/components/UI/GradientButton';
+import { TimeLimitInput } from '@/components/Settings/TimeLimitInput';
+import { StrictnessSelector } from '@/components/Settings/StrictnessSelector';
+import { GradientButton } from '@/components/ui/GradientButton';
 
 export default function SettingsScreen() {
   const [hours, setHours] = useState('3');

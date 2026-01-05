@@ -2,16 +2,19 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
+import { useBootstrapMutation } from '@/hooks/auth/useBootstrapMutation';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useUserStore } from '@/store/userStore';
 import { useOAuth, useSignIn } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { Link, router } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Checkbox, HelperText, TextInput } from 'react-native-paper';
 
 export default function SignInScreen() {
+  const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
   const colorScheme = useColorScheme();
   const [email, setEmail] = useState('');
@@ -20,6 +23,28 @@ export default function SignInScreen() {
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  
+  const { mutateAsync: bootstrap } = useBootstrapMutation();
+  const setRole = useUserStore((state) => state.setRole);
+
+  const handleBootstrap = async (clerkId: string) => {
+     try {
+       const data = await bootstrap({ clerkId });
+       setRole(data.role);
+      
+      if (data.role === 'parent') {
+        router.replace('/(parent)/home');
+      } else if (data.role === 'child') {
+        router.replace('/(child)/home');
+      } else {
+        router.replace('/role-selection');
+      }
+    } catch (e) {
+      console.error('Bootstrap error:', e);
+      // Fallback or specific error handling
+      router.replace('/role-selection');
+    }
+  };
 
   const onSubmit = async () => {
     try {
@@ -27,11 +52,12 @@ export default function SignInScreen() {
       if (!isLoaded) return;
       const res = await signIn!.create({ identifier: email, password });
       await setActive!({ session: res.createdSessionId });
-      router.replace('/(tabs)/home');
+      router.replace('/role-selection');
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Error al iniciar sesión');
     }
   };
+
 
   return (
     <ThemedView style={styles.container}>
@@ -109,13 +135,13 @@ export default function SignInScreen() {
 
                 if (createdSessionId) {
                   await setActive!({ session: createdSessionId });
-                  router.replace('/(tabs)/home');
+                  router.replace('/role-selection');
                 } else if (signIn?.createdSessionId) {
                   await setActive!({ session: signIn.createdSessionId });
-                  router.replace('/(tabs)/home');
+                  router.replace('/role-selection');
                 } else if (signUp?.createdSessionId) {
                   await setActive!({ session: signUp.createdSessionId });
-                  router.replace('/(tabs)/home');
+                  router.replace('/role-selection');
                 } else {
                    if (signUp && signUp.status === 'missing_requirements') {
                       const missing = signUp.missingFields?.join(', ') || '';

@@ -1,13 +1,18 @@
-import { DaySelector } from '@/app/components/Home/DaySelector';
-import { ProgramCard } from '@/app/components/Home/ProgramCard';
-import { StatCard } from '@/app/components/Home/StatCard';
+import { AddChildForm } from '@/components/Home/AddChildForm';
+import { DaySelector } from '@/components/Home/DaySelector';
+import { NoChildrenState } from '@/components/Home/NoChildrenState';
+import { ProgramCard } from '@/components/Home/ProgramCard';
+import { StatCard } from '@/components/Home/StatCard';
+import { ThemedView } from '@/components/themed-view';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { typography } from '@/constants/theme/typography';
+import { useFamilyChildrenQuery } from '@/hooks/family/useFamilyChildrenQuery';
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
 
 // Datos dummy para simular la UI de Figma
 const DAYS = [
@@ -19,7 +24,43 @@ const DAYS = [
 ];
 
 export default function HomeScreen() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const [isAddingChild, setIsAddingChild] = useState(false);
+  const childrenQuery = useFamilyChildrenQuery();
+  const hasChildren = (childrenQuery.data?.length ?? 0) > 0;
+
+  const handleLinkChild = (email: string) => {
+    setIsAddingChild(false);
+    Alert.alert('Éxito', `Se ha vinculado la cuenta de ${email}`);
+    childrenQuery.refetch();
+  };
+
+  if (!isLoaded || childrenQuery.isLoading) {
+    return (
+      <ThemedView style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </ThemedView>
+    );
+  }
+
+  if (isAddingChild) {
+    return (
+      <ThemedView style={{ flex: 1 }}>
+        <AddChildForm 
+          onSuccess={handleLinkChild} 
+          onCancel={() => setIsAddingChild(false)} 
+        />
+      </ThemedView>
+    );
+  }
+
+  if (!hasChildren) {
+    return (
+      <ThemedView style={{ flex: 1 }}>
+        <NoChildrenState onAddChild={() => setIsAddingChild(true)} />
+      </ThemedView>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -76,6 +117,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA', // Fondo gris muy claro como en diseño
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   contentContainer: {
     padding: spacing.lg,
     paddingTop: spacing.xl,
@@ -99,54 +144,50 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
+    ...typography.sectionTitle,
     marginBottom: spacing.md,
-    marginTop: spacing.sm,
+    marginTop: spacing.lg,
   },
   statsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: spacing.md,
-    marginBottom: spacing.lg,
   },
   chartPlaceholder: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 6,
+    justifyContent: 'space-between',
     height: 60,
     width: '100%',
-    justifyContent: 'center',
   },
   bar: {
-    width: 6,
-    borderRadius: 3,
+    width: 8,
+    borderRadius: 4,
   },
   circleChart: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     borderWidth: 6,
-    borderColor: colors.primary,
+    borderColor: '#E0EBFF',
+    borderLeftColor: '#5B8DEF',
+    borderTopColor: '#5B8DEF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderLeftColor: '#E0E0E0', // Simula parte vacía
-    transform: [{ rotate: '45deg' }],
   },
   circleText: {
-    fontSize: 18,
     fontWeight: '700',
+    fontSize: 16,
     color: colors.textPrimary,
-    transform: [{ rotate: '-45deg' }], // Contrarrestar rotación
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   linkText: {
-    fontSize: 14,
     color: colors.primary,
     fontWeight: '600',
   },

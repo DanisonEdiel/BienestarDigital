@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { colors } from '@/constants/theme/colors';
+import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -47,9 +48,21 @@ export default function Onboarding() {
   const { isSignedIn } = useAuth();
   const [index, setIndex] = useState(0);
   const listRef = useRef<FlatList<Step>>(null);
+  const role = useUserStore((state) => state.role);
 
+  // Note: We might want to check the role here if already signed in,
+  // but usually isSignedIn check happens first. 
+  // If signed in, we redirect based on role.
+  
   if (isSignedIn) {
-    return <Redirect href={'/(tabs)/home'} />;
+    if (role === 'parent') return <Redirect href={'/(parent)/home'} />;
+    if (role === 'child') return <Redirect href={'/(child)/home'} />;
+    // If role is null or new_user, maybe go to role selection or parent home default?
+    // Let's assume parent home for backward compatibility or role selection.
+    if (role === 'new_user') return <Redirect href={'/role-selection'} />;
+    
+    // Fallback if role is missing but user is signed in (e.g. existing user before update)
+    return <Redirect href={'/(parent)/home'} />;
   }
 
   const next = () => {
@@ -69,6 +82,7 @@ export default function Onboarding() {
         data={STEPS}
         horizontal
         pagingEnabled
+        style={{ flex: 1 }}
         keyExtractor={(item) => item.key}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(ev) => {
@@ -98,6 +112,7 @@ export default function Onboarding() {
               style={styles.button}
               contentStyle={{ height: 50 }}
               labelStyle={{ fontSize: 16, fontWeight: '600' }}
+
               buttonColor={colors.primary}
             >
               {item.cta}

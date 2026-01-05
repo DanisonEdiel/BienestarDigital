@@ -2,19 +2,43 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
+import { useBootstrapMutation } from '@/hooks/auth/useBootstrapMutation';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useUserStore } from '@/store/userStore';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 
 export default function VerifyEmailScreen() {
+  const router = useRouter();
   const { signUp, setActive, isLoaded } = useSignUp();
   const colorScheme = useColorScheme();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const { mutateAsync: bootstrap } = useBootstrapMutation();
+  const setRole = useUserStore((state) => state.setRole);
+
+  const handleBootstrap = async (clerkId: string) => {
+    try {
+      const data = await bootstrap({ clerkId });
+      setRole(data.role);
+      
+      if (data.role === 'parent') {
+        router.replace('/(parent)/home');
+      } else if (data.role === 'child') {
+        router.replace('/(child)/home');
+      } else {
+        router.replace('/role-selection');
+      }
+    } catch (e) {
+      console.error('Bootstrap error:', e);
+      router.replace('/role-selection');
+    }
+  };
 
   const onSubmit = async () => {
     try {
@@ -22,7 +46,12 @@ export default function VerifyEmailScreen() {
       if (!isLoaded) return;
       const res = await signUp!.attemptEmailAddressVerification({ code });
       await setActive!({ session: res.createdSessionId });
-      router.replace('/(tabs)/home');
+      
+      if (res.createdUserId) {
+        await handleBootstrap(res.createdUserId);
+      } else {
+        router.replace('/role-selection');
+      }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Código inválido');
     }
