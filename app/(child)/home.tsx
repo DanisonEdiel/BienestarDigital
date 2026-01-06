@@ -4,14 +4,41 @@ import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Modal, Dimensions } from 'react-native';
+import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
+import { useRegisterDeviceToken } from '@/hooks/family/useRegisterDeviceToken';
+
+const { height, width } = Dimensions.get('window');
 
 export default function ChildHomeScreen() {
   const { user } = useUser();
+  const [isLocked, setIsLocked] = useState(false);
+  const registerToken = useRegisterDeviceToken();
+  
+  // Register token on mount
+  useEffect(() => {
+      registerToken.mutate();
+  }, []);
+
+  // Listen for realtime commands
+  useRealtimeConnection((locked) => {
+      setIsLocked(locked);
+  });
 
   return (
     <ThemedView style={styles.container}>
+      {/* Lock Overlay */}
+      <Modal visible={isLocked} animationType="fade" transparent={false}>
+          <View style={styles.lockOverlay}>
+              <Ionicons name="lock-closed" size={80} color={colors.white} />
+              <ThemedText type="title" style={styles.lockTitle}>Dispositivo en Pausa</ThemedText>
+              <ThemedText style={styles.lockSubtitle}>
+                  Es momento de tomar un descanso y conectar con el mundo real.
+              </ThemedText>
+          </View>
+      </Modal>
+
       <View style={styles.header}>
         <ThemedText type="title">Hola, {user?.firstName || 'Campeón'}</ThemedText>
         <ThemedText style={styles.subtitle}>¡Que tengas un gran día!</ThemedText>
@@ -79,5 +106,23 @@ const styles = StyleSheet.create({
   infoText: {
       textAlign: 'center',
       color: colors.textSecondary,
+  },
+  lockOverlay: {
+      flex: 1,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+  },
+  lockTitle: {
+      color: colors.white,
+      marginTop: spacing.lg,
+      textAlign: 'center',
+  },
+  lockSubtitle: {
+      color: 'rgba(255,255,255,0.8)',
+      marginTop: spacing.md,
+      textAlign: 'center',
+      fontSize: 18,
   }
 });

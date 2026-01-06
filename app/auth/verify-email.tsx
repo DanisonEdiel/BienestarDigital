@@ -22,10 +22,17 @@ export default function VerifyEmailScreen() {
   const { mutateAsync: bootstrap } = useBootstrapMutation();
   const setRole = useUserStore((state) => state.setRole);
 
+  const setUserData = useUserStore((state) => state.setUserData);
+
   const handleBootstrap = async (clerkId: string) => {
     try {
       const data = await bootstrap({ clerkId });
-      setRole(data.role);
+      setUserData({
+          role: data.role,
+          domainUserId: data.id,
+          clerkId: data.clerk_id,
+          email: data.email
+      });
       
       if (data.role === 'parent') {
         router.replace('/(parent)/home');

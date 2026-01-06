@@ -2,14 +2,17 @@ import { api } from '@/lib/api';
 import { useMutation } from '@tanstack/react-query';
 
 export type BootstrapResponse = {
+  id: string; // domainUserId
+  email: string;
+  clerk_id: string;
   role: 'parent' | 'child' | 'new_user';
-  // Add other properties if needed
+  // relations etc
 };
 
 export const useBootstrapMutation = () => {
   return useMutation({
-    mutationFn: async ({ clerkId, role }: { clerkId: string; role?: string }) => {
-      const response = await api.post<BootstrapResponse>('/users/bootstrap', { clerkId, role });
+    mutationFn: async ({ clerkId, email, role }: { clerkId: string; email?: string; role?: string }) => {
+      const response = await api.post<BootstrapResponse>('/users/bootstrap', { clerkId, email, role });
       return response.data;
     },
   });

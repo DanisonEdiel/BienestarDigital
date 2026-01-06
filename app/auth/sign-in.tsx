@@ -27,23 +27,31 @@ export default function SignInScreen() {
   const { mutateAsync: bootstrap } = useBootstrapMutation();
   const setRole = useUserStore((state) => state.setRole);
 
+  const setUserData = useUserStore((state) => state.setUserData);
+
   const handleBootstrap = async (clerkId: string) => {
      try {
-       const data = await bootstrap({ clerkId });
-       setRole(data.role);
-      
-      if (data.role === 'parent') {
-        router.replace('/(parent)/home');
-      } else if (data.role === 'child') {
-        router.replace('/(child)/home');
-      } else {
-        router.replace('/role-selection');
-      }
-    } catch (e) {
-      console.error('Bootstrap error:', e);
-      // Fallback or specific error handling
-      router.replace('/role-selection');
-    }
+       const data = await bootstrap({ clerkId, email: undefined }); // Email is optional in hook, but backend might extract from token or we need to pass it.
+       // Note: SignIn doesn't easily give email unless we use 'email' var from state.
+       
+       setUserData({
+           role: data.role,
+           domainUserId: data.id,
+           clerkId: data.clerk_id,
+           email: data.email
+       });
+       
+       if (data.role === 'parent') {
+         router.replace('/(parent)/home');
+       } else if (data.role === 'child') {
+         router.replace('/(child)/home');
+       } else {
+         router.replace('/role-selection');
+       }
+     } catch (e) {
+       console.error('Bootstrap error:', e);
+       router.replace('/role-selection');
+     }
   };
 
   const onSubmit = async () => {
@@ -52,7 +60,14 @@ export default function SignInScreen() {
       if (!isLoaded) return;
       const res = await signIn!.create({ identifier: email, password });
       await setActive!({ session: res.createdSessionId });
-      router.replace('/role-selection');
+
+      if (res.status === 'complete') {
+        if (res.createdUserId) {
+          await handleBootstrap(res.createdUserId);
+        } else {
+          router.replace('/role-selection');
+        }
+      }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Error al iniciar sesión');
     }
