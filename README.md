@@ -1,6 +1,8 @@
-# EcuDiesel – App móvil (Expo)
+# Felicitas – App móvil (Expo)
 
-Aplicación móvil para controlar el consumo de diésel. Arquitectura preparada para integrar un backend posteriormente sin reescrituras en el front.
+## Descripción
+
+Aplicación móvil para controlar el estres de los usuarios. Arquitectura preparada para integrar un backend posteriormente sin reescrituras en el front.
 
 ## Estado actual
 

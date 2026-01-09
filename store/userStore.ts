@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 export type UserRole = 'parent' | 'child' | 'new_user' | null;
 
