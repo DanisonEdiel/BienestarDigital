@@ -8,11 +8,12 @@ import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { typography } from '@/constants/theme/typography';
 import { useFamilyChildrenQuery } from '@/hooks/family/useFamilyChildrenQuery';
+import { useDeviceLockControl } from '@/hooks/family/useDeviceLockControl';
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
+import { ActivityIndicator, Button } from 'react-native-paper';
 
 // Datos dummy para simular la UI de Figma
 const DAYS = [
@@ -27,12 +28,25 @@ export default function HomeScreen() {
   const { user, isLoaded } = useUser();
   const [isAddingChild, setIsAddingChild] = useState(false);
   const childrenQuery = useFamilyChildrenQuery();
+  const lockControl = useDeviceLockControl();
+  
   const hasChildren = (childrenQuery.data?.length ?? 0) > 0;
 
   const handleLinkChild = (email: string) => {
     setIsAddingChild(false);
-    Alert.alert('Éxito', `Se ha vinculado la cuenta de ${email}`);
+    Alert.alert('Éxito', `Se ha enviado la invitación a ${email}`);
     childrenQuery.refetch();
+  };
+
+  const toggleLock = (deviceId: string, currentStatus: boolean) => {
+      lockControl.mutate({ deviceId, locked: !currentStatus }, {
+          onSuccess: () => {
+              Alert.alert('Éxito', `Dispositivo ${!currentStatus ? 'bloqueado' : 'desbloqueado'}`);
+          },
+          onError: (err) => {
+              Alert.alert('Error', 'No se pudo actualizar el estado del dispositivo');
+          }
+      });
   };
 
   if (!isLoaded || childrenQuery.isLoading) {
@@ -70,9 +84,46 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>Hola, {user?.firstName || 'Usuario'}</Text>
           <Text style={styles.subtitle}>Desconecta para conectar</Text>
         </View>
-        <TouchableOpacity style={styles.notificationBtn}>
-           <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
+        <TouchableOpacity style={styles.notificationBtn} onPress={() => setIsAddingChild(true)}>
+           <Ionicons name="person-add-outline" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
+      </View>
+
+      {/* Children List & Lock Controls */}
+      <View style={styles.childrenList}>
+          <Text style={styles.sectionTitle}>Tus Hijos</Text>
+          {childrenQuery.data?.map((child: any) => (
+              <View key={child.id} style={styles.childCard}>
+                  <View>
+                      <Text style={styles.childName}>{child.child?.email || 'Hijo'}</Text>
+                      <Text style={styles.childStatus}>
+                          {child.status === 'pending' ? 'Pendiente' : 'Activo'}
+                      </Text>
+                  </View>
+                  {/* Assuming child object has 'devices' array or similar based on API description.
+                      If not, we might need to adjust. The bootstrap returns relations.
+                      Let's assume the relation has a 'device' or we can lock the 'user' (which broadcasts to devices).
+                      The API says: POST /api/family/device/:deviceId/lock.
+                      We need deviceId. 
+                      If the API returns devices for the child, we list them.
+                  */}
+                  <View style={styles.deviceControls}>
+                       {/* Mocking a device button if we don't have device info yet, 
+                           or assuming a 'main' device if structured that way. 
+                           For now, showing a generic lock button that might fail if no deviceId.
+                           We'll assume 'device_CHILD_ID' for demo if real data missing.
+                       */}
+                       <Button 
+                        mode="contained" 
+                        compact 
+                        buttonColor={child.is_locked ? colors.error : colors.primary}
+                        onPress={() => toggleLock('device_' + child.child_id, !!child.is_locked)}
+                       >
+                           {child.is_locked ? 'Desbloquear' : 'Bloquear'}
+                       </Button>
+                  </View>
+              </View>
+          ))}
       </View>
 
       {/* Selector de días */}

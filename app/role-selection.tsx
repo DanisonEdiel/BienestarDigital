@@ -13,15 +13,20 @@ import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-nat
 export default function RoleSelectionScreen() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
-  const setRole = useUserStore((state) => state.setRole);
+  const setUserData = useUserStore((state) => state.setUserData);
   const { mutateAsync: bootstrap, isPending } = useBootstrapMutation();
 
   useEffect(() => {
     if (isLoaded && user) {
-        bootstrap({ clerkId: user.id })
+        bootstrap({ clerkId: user.id, email: user.primaryEmailAddress?.emailAddress })
             .then((data) => {
                 if (data.role && data.role !== 'new_user') {
-                    setRole(data.role);
+                    setUserData({
+                        role: data.role,
+                        domainUserId: data.id,
+                        clerkId: data.clerk_id,
+                        email: data.email
+                    });
                     if (data.role === 'parent') router.replace('/(parent)/home');
                     else if (data.role === 'child') router.replace('/(child)/home');
                 }
@@ -33,9 +38,15 @@ export default function RoleSelectionScreen() {
   const handleSelectRole = async (role: 'parent' | 'child') => {
     try {
         if (user) {
-            await bootstrap({ clerkId: user.id, role });
+            const data = await bootstrap({ clerkId: user.id, role, email: user.primaryEmailAddress?.emailAddress });
+             setUserData({
+                role: data.role,
+                domainUserId: data.id,
+                clerkId: data.clerk_id,
+                email: data.email
+            });
         }
-        setRole(role);
+        
         if (role === 'parent') {
           router.replace('/(parent)/home');
         } else {
@@ -44,6 +55,8 @@ export default function RoleSelectionScreen() {
     } catch (error) {
         console.error('Error setting role:', error);
         // Proceed anyway locally
+        // But store won't have full user data if bootstrap failed.
+        // We might want to fallback or retry.
         setRole(role);
         if (role === 'parent') router.replace('/(parent)/home');
         else router.replace('/(child)/home');
