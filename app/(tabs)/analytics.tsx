@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme/colors';
@@ -7,9 +7,10 @@ import { spacing } from '@/constants/theme/spacing';
 import { UsageChart } from '@/components/Analytics/UsageChart';
 import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
 import { AppUsageList } from '@/components/Analytics/AppUsageList';
+import { useUsageMetrics } from '@/hooks/useMetrics';
 
-// Dummy Data
-const CHART_DATA = [
+// Dummy Data (Fallback)
+const CHART_DATA_FALLBACK = [
   { day: 'Dom', value: 40 },
   { day: 'Lun', value: 60 },
   { day: 'Mar', value: 85, isPeak: true },
@@ -25,13 +26,27 @@ const STATS_SUMMARY = [
   { label: 'Alertas Ira', value: 5, color: '#5B8DEF' },
 ];
 
-const APPS_DATA = [
+const APPS_DATA_FALLBACK = [
   { name: 'TikTok', time: '9:34 PM', category: '2h • Alto', color: '#000000' },
   { name: 'Clash Royale', time: '12:34 PM', category: '1h • Medio', color: '#5B8DEF' },
 ];
 
 export default function AnalyticsScreen() {
   const [activeTab, setActiveTab] = useState<'Semana' | 'Mes'>('Semana');
+  const { data: metrics, isLoading } = useUsageMetrics(activeTab === 'Semana' ? 'week' : 'month');
+
+  // Process metrics for chart if available
+  const chartData = metrics ? metrics.map((m: any) => ({
+      day: new Date(m.timestamp).toLocaleDateString('es-ES', { weekday: 'short' }),
+      value: m.duration_seconds / 60, // minutes
+  })).slice(0, 7) : CHART_DATA_FALLBACK;
+
+  const appsData = metrics ? metrics.map((m: any) => ({
+      name: m.app_name,
+      time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      category: `${Math.round(m.duration_seconds / 60)}m`,
+      color: colors.primary
+  })) : APPS_DATA_FALLBACK;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -62,13 +77,17 @@ export default function AnalyticsScreen() {
       </View>
 
       {/* Chart */}
-      <UsageChart data={CHART_DATA} />
+      {isLoading ? (
+          <ActivityIndicator size="large" color={colors.primary} />
+      ) : (
+          <UsageChart data={chartData} />
+      )}
 
       {/* Stats Row */}
       <StatSummaryRow stats={STATS_SUMMARY} />
 
       {/* App List */}
-      <AppUsageList apps={APPS_DATA} />
+      <AppUsageList apps={appsData} />
 
     </ScrollView>
   );

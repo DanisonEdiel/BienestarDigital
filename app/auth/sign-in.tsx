@@ -25,32 +25,23 @@ export default function SignInScreen() {
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   
   const { mutateAsync: bootstrap } = useBootstrapMutation();
-  const setRole = useUserStore((state) => state.setRole);
 
   const setUserData = useUserStore((state) => state.setUserData);
 
   const handleBootstrap = async (clerkId: string) => {
      try {
-       const data = await bootstrap({ clerkId, email: undefined }); // Email is optional in hook, but backend might extract from token or we need to pass it.
-       // Note: SignIn doesn't easily give email unless we use 'email' var from state.
+       const data = await bootstrap({ clerkId, email: undefined });
        
        setUserData({
-           role: data.role,
            domainUserId: data.id,
            clerkId: data.clerk_id,
            email: data.email
        });
        
-       if (data.role === 'parent') {
-         router.replace('/(parent)/home');
-       } else if (data.role === 'child') {
-         router.replace('/(child)/home');
-       } else {
-         router.replace('/role-selection');
-       }
+       router.replace('/(tabs)');
      } catch (e) {
        console.error('Bootstrap error:', e);
-       router.replace('/role-selection');
+       router.replace('/(tabs)');
      }
   };
 
@@ -65,7 +56,7 @@ export default function SignInScreen() {
         if (res.createdUserId) {
           await handleBootstrap(res.createdUserId);
         } else {
-          router.replace('/role-selection');
+          router.replace('/(tabs)');
         }
       }
     } catch (e: any) {

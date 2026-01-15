@@ -3,16 +3,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-export type UserRole = 'parent' | 'child' | 'new_user' | null;
-
-interface UserState {
-  role: UserRole;
+export interface UserState {
   domainUserId: string | null;
   clerkId: string | null;
   email: string | null;
-  setRole: (role: UserRole) => void;
-  setUserData: (data: { domainUserId: string; clerkId: string; email: string; role: UserRole }) => void;
-  clearRole: () => void;
+  setUserData: (data: { domainUserId: string; clerkId: string; email: string }) => void;
+  clearData: () => void;
 }
 
 // Storage adapter for Zustand persist
@@ -42,21 +38,18 @@ const storage = {
 export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
-      role: null,
       domainUserId: null,
       clerkId: null,
       email: null,
-      setRole: (role) => set({ role }),
       setUserData: (data) => set({ 
-        role: data.role, 
         domainUserId: data.domainUserId, 
         clerkId: data.clerkId, 
         email: data.email 
       }),
-      clearRole: () => set({ role: null, domainUserId: null, clerkId: null, email: null }),
+      clearData: () => set({ domainUserId: null, clerkId: null, email: null }),
     }),
     {
-      name: 'user-role-storage',
+      name: 'user-storage',
       storage: createJSONStorage(() => storage),
     }
   )

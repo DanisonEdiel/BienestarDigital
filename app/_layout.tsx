@@ -47,9 +47,7 @@ export default function RootLayout() {
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack initialRouteName="index">
               <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(parent)" options={{ headerShown: false }} />
-              <Stack.Screen name="(child)" options={{ headerShown: false }} />
-              <Stack.Screen name="role-selection" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
               <Stack.Screen name="auth" options={{ headerShown: false }} />
               <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />

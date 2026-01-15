@@ -1,5 +1,6 @@
 import { api } from '@/lib/api';
 import { useMutation } from '@tanstack/react-query';
+import { useUser } from '@clerk/clerk-expo';
 
 export type BootstrapResponse = {
   id: string; // domainUserId
@@ -10,9 +11,12 @@ export type BootstrapResponse = {
 };
 
 export const useBootstrapMutation = () => {
+  const { getToken } = useUser();
   return useMutation({
     mutationFn: async ({ clerkId, email, role }: { clerkId: string; email?: string; role?: string }) => {
-      const response = await api.post<BootstrapResponse>('/users/bootstrap', { clerkId, email, role });
+      const token = await getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await api.post<BootstrapResponse>('/users/bootstrap', { clerkId, email, role }, { headers });
       return response.data;
     },
   });

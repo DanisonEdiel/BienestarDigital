@@ -20,7 +20,6 @@ export default function VerifyEmailScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const { mutateAsync: bootstrap } = useBootstrapMutation();
-  const setRole = useUserStore((state) => state.setRole);
 
   const setUserData = useUserStore((state) => state.setUserData);
 
@@ -28,22 +27,15 @@ export default function VerifyEmailScreen() {
     try {
       const data = await bootstrap({ clerkId });
       setUserData({
-          role: data.role,
           domainUserId: data.id,
           clerkId: data.clerk_id,
           email: data.email
       });
       
-      if (data.role === 'parent') {
-        router.replace('/(parent)/home');
-      } else if (data.role === 'child') {
-        router.replace('/(child)/home');
-      } else {
-        router.replace('/role-selection');
-      }
+      router.replace('/(tabs)');
     } catch (e) {
       console.error('Bootstrap error:', e);
-      router.replace('/role-selection');
+      router.replace('/(tabs)');
     }
   };
 
@@ -57,7 +49,7 @@ export default function VerifyEmailScreen() {
       if (res.createdUserId) {
         await handleBootstrap(res.createdUserId);
       } else {
-        router.replace('/role-selection');
+        router.replace('/(tabs)');
       }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Código inválido');
