@@ -23,7 +23,7 @@ const DAYS = [
 
 export default function HomeScreen() {
   const { user, isLoaded } = useUser();
-  const { metrics, appUsage, hasPermission, requestPermission } = useDigitalWellbeing();
+  const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility } = useDigitalWellbeing();
   
   if (!isLoaded) {
     return (
@@ -49,12 +49,22 @@ export default function HomeScreen() {
       {/* Selector de días */}
       <DaySelector days={DAYS} />
 
-      {/* Permisos Warning */}
+      {/* Permisos Warning: Uso de Apps */}
       {Platform.OS === 'android' && !hasPermission && (
         <View style={styles.permissionAlert}>
-            <Text style={styles.permissionText}>Se requiere acceso al uso de aplicaciones para métricas detalladas.</Text>
-            <Button mode="contained" onPress={requestPermission} style={styles.permissionBtn}>
-                Conceder Permiso
+            <Text style={styles.permissionText}>⚠️ Se requiere permiso de "Uso de Apps" para medir el tiempo.</Text>
+            <Button mode="contained" onPress={requestPermission} style={styles.permissionBtn} buttonColor="#856404">
+                Activar Permiso de Uso
+            </Button>
+        </View>
+      )}
+
+      {/* Permisos Warning: Accesibilidad */}
+      {Platform.OS === 'android' && !hasAccessibility && (
+        <View style={[styles.permissionAlert, { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }]}>
+            <Text style={[styles.permissionText, { color: '#721C24' }]}>⚠️ Activa el "Servicio de Accesibilidad" para contar taps y scrolls.</Text>
+            <Button mode="contained" onPress={requestAccessibility} style={styles.permissionBtn} buttonColor="#721C24">
+                Activar Accesibilidad
             </Button>
         </View>
       )}

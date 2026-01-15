@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { NativeModules, AppState, AppStateStatus, Platform } from 'react-native';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { api } from '@/lib/api';
+import { useBootstrapMutation } from './auth/useBootstrapMutation';
 
 const { InteractionModule } = NativeModules;
 
@@ -19,16 +20,32 @@ export interface AppUsage {
 
 export function useDigitalWellbeing() {
   const { userId, isSignedIn } = useAuth();
+  const { user } = useUser();
+  const bootstrapMutation = useBootstrapMutation();
   const [metrics, setMetrics] = useState<DailyMetrics | null>(null);
   const [appUsage, setAppUsage] = useState<AppUsage[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
+  const [hasAccessibility, setHasAccessibility] = useState(false);
   const appState = useRef<AppStateStatus>(AppState.currentState);
+  const [isBootstrapped, setIsBootstrapped] = useState(false);
 
   const checkPermission = async () => {
-    if (Platform.OS === 'android' && InteractionModule?.checkUsagePermission) {
-      const has = await InteractionModule.checkUsagePermission();
-      setHasPermission(has);
-      return has;
+    if (Platform.OS === 'android' && InteractionModule) {
+      let usageAllowed = false;
+      
+      // Check Usage Stats Permission
+      if (InteractionModule.checkUsagePermission) {
+        usageAllowed = await InteractionModule.checkUsagePermission();
+        setHasPermission(usageAllowed);
+      }
+      
+      // Check Accessibility Service
+      if (InteractionModule.isAccessibilityServiceEnabled) {
+        const accessibilityAllowed = await InteractionModule.isAccessibilityServiceEnabled();
+        setHasAccessibility(accessibilityAllowed);
+      }
+
+      return usageAllowed;
     }
     return false;
   };
@@ -39,10 +56,39 @@ export function useDigitalWellbeing() {
     }
   };
 
+  const requestAccessibility = () => {
+    if (Platform.OS === 'android' && InteractionModule?.requestAccessibilityPermission) {
+        InteractionModule.requestAccessibilityPermission();
+    }
+  };
+
+  // Ensure user exists in backend
+  const ensureUserExists = async () => {
+    if (!isSignedIn || !userId || isBootstrapped) return true;
+    
+    try {
+        console.log('Bootstrapping user in backend...', userId);
+        await bootstrapMutation.mutateAsync({
+            clerkId: userId,
+            email: user?.primaryEmailAddress?.emailAddress,
+            role: 'parent' // Default or logic to determine role
+        });
+        setIsBootstrapped(true);
+        return true;
+    } catch (error) {
+        console.error('Bootstrap failed:', error);
+        return false;
+    }
+  };
+
   const fetchData = async () => {
     if (!isSignedIn || !userId || Platform.OS !== 'android' || !InteractionModule) return;
 
     try {
+      // 0. Ensure user exists before sending metrics
+      const userReady = await ensureUserExists();
+      if (!userReady) return;
+
       // 1. Get Interaction Metrics
       const dailyMetrics = await InteractionModule.getDailyMetrics();
       setMetrics(dailyMetrics);
@@ -54,13 +100,13 @@ export function useDigitalWellbeing() {
         setAppUsage(usage);
         
         // 3. Sync Usage to Backend
+        // Fix: nightUsage must be boolean, details removed if not in DTO or backend ignores it
         await api.post(`/metrics/usage?clerkId=${userId}`, {
              usageDate: dailyMetrics.recordDate,
-             totalUsageSeconds: usage.reduce((acc: number, item: AppUsage) => acc + item.totalTimeInForeground, 0),
-             sessionsCount: 0, // Not calculated yet
+             totalUsageSeconds: Math.floor(usage.reduce((acc: number, item: AppUsage) => acc + item.totalTimeInForeground, 0)),
+             sessionsCount: 0, 
              longestSessionSeconds: 0,
-             nightUsage: 0,
-             details: usage
+             nightUsage: false, // Fixed: boolean instead of number
         });
       }
 
@@ -74,13 +120,15 @@ export function useDigitalWellbeing() {
         });
       }
 
-    } catch (error) {
-      console.error('Failed to fetch/sync wellbeing data:', error);
+    } catch (error: any) {
+      console.error('Failed to fetch/sync wellbeing data:', error?.response?.status, error?.response?.data || error.message);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    if (isSignedIn) {
+        fetchData();
+    }
 
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
@@ -89,19 +137,21 @@ export function useDigitalWellbeing() {
       appState.current = nextAppState;
     });
 
-    const interval = setInterval(fetchData, 60 * 1000); // Update every minute
+    const interval = setInterval(fetchData, 5 * 1000); // Update every 5 seconds
 
     return () => {
       subscription.remove();
       clearInterval(interval);
     };
-  }, [userId, isSignedIn]);
+  }, [userId, isSignedIn]); // Added user dependency to re-trigger bootstrap if needed
 
   return {
     metrics,
     appUsage,
     hasPermission,
+    hasAccessibility,
     requestPermission,
+    requestAccessibility,
     refresh: fetchData
   };
 }

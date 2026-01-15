@@ -1,6 +1,6 @@
 import { api } from '@/lib/api';
 import { useMutation } from '@tanstack/react-query';
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 
 export type BootstrapResponse = {
   id: string; // domainUserId
@@ -11,7 +11,7 @@ export type BootstrapResponse = {
 };
 
 export const useBootstrapMutation = () => {
-  const { getToken } = useUser();
+  const { getToken } = useAuth();
   return useMutation({
     mutationFn: async ({ clerkId, email, role }: { clerkId: string; email?: string; role?: string }) => {
       const token = await getToken();

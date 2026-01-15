@@ -1,7 +1,6 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
-import { Redirect } from 'expo-router';
 import { colors } from '@/constants/theme/colors';
 import { useInteractionSync } from '@/hooks/useInteractionSync';
 
