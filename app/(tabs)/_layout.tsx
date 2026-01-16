@@ -3,9 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { colors } from '@/constants/theme/colors';
 import { useInteractionSync } from '@/hooks/useInteractionSync';
+import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 
 export default function TabsLayout() {
   useInteractionSync();
+  useAppBootstrap();
 
   return (
     <>

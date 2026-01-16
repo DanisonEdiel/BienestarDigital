@@ -2,9 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
-import { useBootstrapMutation } from '@/hooks/auth/useBootstrapMutation';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useUserStore } from '@/store/userStore';
 import { useOAuth, useSignIn } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
@@ -24,40 +22,15 @@ export default function SignInScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   
-  const { mutateAsync: bootstrap } = useBootstrapMutation();
-
-  const setUserData = useUserStore((state) => state.setUserData);
-
-  const handleBootstrap = async (clerkId: string) => {
-     try {
-       const data = await bootstrap({ clerkId, email: undefined });
-       
-       setUserData({
-           domainUserId: data.id,
-           clerkId: data.clerk_id,
-           email: data.email
-       });
-       
-       router.replace('/(tabs)');
-     } catch (e) {
-       console.error('Bootstrap error:', e);
-       router.replace('/(tabs)');
-     }
-  };
-
   const onSubmit = async () => {
     try {
       setError(null);
       if (!isLoaded) return;
       const res = await signIn!.create({ identifier: email, password });
-      await setActive!({ session: res.createdSessionId });
 
       if (res.status === 'complete') {
-        if (res.createdUserId) {
-          await handleBootstrap(res.createdUserId);
-        } else {
-          router.replace('/(tabs)');
-        }
+        await setActive!({ session: res.createdSessionId });
+        router.replace('/(tabs)/analytics');
       }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? 'Error al iniciar sesión');
@@ -141,13 +114,13 @@ export default function SignInScreen() {
 
                 if (createdSessionId) {
                   await setActive!({ session: createdSessionId });
-                  router.replace('/role-selection');
+                  router.replace('/(tabs)/analytics');
                 } else if (signIn?.createdSessionId) {
                   await setActive!({ session: signIn.createdSessionId });
-                  router.replace('/role-selection');
+                  router.replace('/(tabs)/analytics');
                 } else if (signUp?.createdSessionId) {
                   await setActive!({ session: signUp.createdSessionId });
-                  router.replace('/role-selection');
+                  router.replace('/(tabs)/analytics');
                 } else {
                    if (signUp && signUp.status === 'missing_requirements') {
                       const missing = signUp.missingFields?.join(', ') || '';

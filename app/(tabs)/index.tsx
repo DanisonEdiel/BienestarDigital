@@ -69,31 +69,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Estadísticas Reales */}
-      <Text style={styles.sectionTitle}>Métricas en Tiempo Real</Text>
-      <View style={styles.statsRow}>
-        <StatCard title="Interacciones" subtitle="Hoy" status="Info">
-            <View style={{ padding: 10 }}>
-                <Text style={styles.metricText}>Taps: {metrics?.tapsCount || 0}</Text>
-                <Text style={styles.metricText}>Scrolls: {metrics?.scrollEvents || 0}</Text>
-            </View>
-        </StatCard>
-        
-        <StatCard title="Apps Más Usadas" subtitle="Hoy" value="">
-             <View style={{ padding: 10 }}>
-                {appUsage.length > 0 ? (
-                    appUsage.map((app, index) => (
-                        <Text key={index} style={styles.metricText} numberOfLines={1}>
-                            {app.packageName.split('.').pop()}: {(app.totalTimeInForeground / 60).toFixed(1)} min
-                        </Text>
-                    ))
-                ) : (
-                    <Text style={styles.metricText}>Sin datos aún</Text>
-                )}
-             </View>
-        </StatCard>
-      </View>
-
       {/* Estadísticas Dummy (Originales) */}
       <Text style={styles.sectionTitle}>Análisis de Bienestar</Text>
       <View style={styles.statsRow}>

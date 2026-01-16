@@ -11,12 +11,13 @@ export type UsageMetric = {
   category?: string;
 };
 
-export type InteractionMetric = {
-  id: number;
+export type InteractionHistoryItem = {
+  id: string;
   user_id: string;
-  type: string;
-  timestamp: string;
-  details?: string;
+  record_date: string;
+  taps_count: number;
+  scroll_events: number;
+  avg_scroll_speed: number | null;
 };
 
 export type WellnessRecommendation = {
@@ -37,6 +38,23 @@ export function useUsageMetrics(timeRange: 'day' | 'week' | 'month' = 'day') {
       const { data } = await api.get<UsageMetric[]>(`/metrics/usage`, {
         params: { clerkId: user!.id, range: timeRange },
         headers: { Authorization: `Bearer ${token}` }
+      });
+      return data;
+    },
+  });
+}
+
+export function useInteractionHistory(timeRange: 'day' | 'week' | 'month' = 'week') {
+  const { user, getToken } = useUser();
+
+  return useQuery({
+    queryKey: ['metrics-interactions', user?.id, timeRange],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const token = await getToken();
+      const { data } = await api.get<InteractionHistoryItem[]>(`/metrics/interactions`, {
+        params: { clerkId: user!.id, range: timeRange },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return data;
     },

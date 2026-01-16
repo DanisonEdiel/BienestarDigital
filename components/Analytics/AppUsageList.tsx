@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,8 @@ type AppItem = {
   name: string;
   time: string;
   category: string;
-  icon?: string; // URL or name
+  percentage?: string;
+  iconName?: keyof typeof Ionicons.glyphMap;
   color?: string;
 };
 
@@ -25,10 +26,17 @@ export const AppUsageList = ({ apps }: AppUsageListProps) => {
           <View style={styles.info}>
             <Text style={styles.time}>{app.time}</Text>
             <Text style={styles.name}>{app.name}</Text>
-            <Text style={styles.category}>{app.time} • {app.category}</Text>
+            <Text style={styles.category}>
+              {app.percentage ? `${app.percentage} • ` : ''}
+              {app.category}
+            </Text>
           </View>
           <View style={[styles.iconContainer, { backgroundColor: app.color || '#E0E0E0' }]}>
-             <Ionicons name="apps" size={24} color={colors.white} />
+             <Ionicons
+               name={app.iconName || 'apps'}
+               size={24}
+               color={colors.white}
+             />
           </View>
         </View>
       ))}

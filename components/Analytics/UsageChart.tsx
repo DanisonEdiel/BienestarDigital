@@ -5,7 +5,10 @@ import { spacing } from '@/constants/theme/spacing';
 
 type ChartData = {
   day: string;
-  value: number; // 0 to 100
+  tapsValue: number; // 0 to 100 relative to max taps
+  scrollsValue: number; // 0 to 100 relative to max scrolls
+  tapsRaw: number;
+  scrollsRaw: number;
   isPeak?: boolean;
 };
 
@@ -25,36 +28,65 @@ export const UsageChart = ({ data }: UsageChartProps) => {
 
       {/* Chart Area */}
       <View style={styles.chartArea}>
-        {/* Horizontal Grid Lines (simplified) */}
-        {/* We could map lines here matching labels */}
-        
-        {/* Bars */}
         <View style={styles.barsContainer}>
           {data.map((item, index) => (
             <View key={index} style={styles.barColumn}>
               {/* Tooltip for Peak */}
               {item.isPeak && (
                 <View style={styles.tooltip}>
-                  <Text style={styles.tooltipText}>Pico de Uso</Text>
+                  <Text style={styles.tooltipText}>Pico</Text>
                   <View style={styles.tooltipArrow} />
                 </View>
               )}
               
-              {/* Bar Track */}
-              <View style={styles.barTrack}>
-                <View 
-                  style={[
-                    styles.barFill, 
-                    { 
-                      height: `${item.value}%`,
-                      backgroundColor: item.isPeak ? colors.primary : '#F2F2F7' // Highlight peak
-                    }
-                  ]} 
-                />
+              {/* Bar Group: Taps & Scrolls */}
+              <View style={styles.barsGroup}>
+                {/* Taps Bar */}
+                <View style={styles.singleBarWrapper}>
+                   <View style={styles.barTrack}>
+                    <View 
+                      style={[
+                        styles.barFill, 
+                        { 
+                          height: `${item.tapsValue}%`,
+                          backgroundColor: colors.primary 
+                        }
+                      ]} 
+                    />
+                  </View>
+                </View>
+
+                {/* Scrolls Bar */}
+                <View style={styles.singleBarWrapper}>
+                  <View style={styles.barTrack}>
+                    <View 
+                      style={[
+                        styles.barFill, 
+                        { 
+                          height: `${item.scrollsValue}%`,
+                          backgroundColor: '#FF9F0A' // Orange for scrolls
+                        }
+                      ]} 
+                    />
+                  </View>
+                </View>
               </View>
+
               <Text style={styles.xLabel}>{item.day}</Text>
             </View>
           ))}
+        </View>
+        
+        {/* Legend */}
+        <View style={styles.legendContainer}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+            <Text style={styles.legendText}>Taps</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#FF9F0A' }]} />
+            <Text style={styles.legendText}>Scrolls</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -64,12 +96,12 @@ export const UsageChart = ({ data }: UsageChartProps) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    height: 300,
+    height: 320,
     marginTop: spacing.md,
   },
   yAxis: {
     justifyContent: 'space-between',
-    paddingBottom: 24, // Space for x labels alignment
+    paddingBottom: 40, // Adjusted for legend/labels
     paddingRight: spacing.sm,
     height: '100%',
   },
@@ -87,7 +119,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    paddingBottom: 0,
+    paddingBottom: 20, // Space for legend
   },
   barColumn: {
     alignItems: 'center',
@@ -95,17 +127,27 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'flex-end',
   },
-  barTrack: {
-    width: 12,
-    height: '85%', // Leave space for labels and tooltip
-    backgroundColor: 'transparent',
+  barsGroup: {
+    flexDirection: 'row',
+    height: '85%',
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  singleBarWrapper: {
+    height: '100%',
     justifyContent: 'flex-end',
-    borderRadius: 6,
+  },
+  barTrack: {
+    width: 8, // Thinner bars to fit 2
+    height: '100%',
+    backgroundColor: 'transparent', // No background track for cleaner look
+    justifyContent: 'flex-end',
+    borderRadius: 4,
     overflow: 'hidden',
   },
   barFill: {
     width: '100%',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   xLabel: {
     marginTop: spacing.xs,
@@ -119,6 +161,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 4,
     alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    zIndex: 10,
   },
   tooltipText: {
     color: colors.white,
@@ -138,5 +183,27 @@ const styles = StyleSheet.create({
     borderTopColor: '#1C1C1E',
     position: 'absolute',
     bottom: -4,
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });

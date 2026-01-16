@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { NativeModules, AppState, AppStateStatus, Platform } from 'react-native';
-import { useAuth, useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import { api } from '@/lib/api';
-import { useBootstrapMutation } from './auth/useBootstrapMutation';
 
 const { InteractionModule } = NativeModules;
 
@@ -15,19 +14,17 @@ export interface DailyMetrics {
 
 export interface AppUsage {
   packageName: string;
+  appName?: string;
   totalTimeInForeground: number; // seconds
 }
 
 export function useDigitalWellbeing() {
   const { userId, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const bootstrapMutation = useBootstrapMutation();
   const [metrics, setMetrics] = useState<DailyMetrics | null>(null);
   const [appUsage, setAppUsage] = useState<AppUsage[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [hasAccessibility, setHasAccessibility] = useState(false);
   const appState = useRef<AppStateStatus>(AppState.currentState);
-  const [isBootstrapped, setIsBootstrapped] = useState(false);
 
   const checkPermission = async () => {
     if (Platform.OS === 'android' && InteractionModule) {
@@ -62,33 +59,10 @@ export function useDigitalWellbeing() {
     }
   };
 
-  // Ensure user exists in backend
-  const ensureUserExists = async () => {
-    if (!isSignedIn || !userId || isBootstrapped) return true;
-    
-    try {
-        console.log('Bootstrapping user in backend...', userId);
-        await bootstrapMutation.mutateAsync({
-            clerkId: userId,
-            email: user?.primaryEmailAddress?.emailAddress,
-            role: 'parent' // Default or logic to determine role
-        });
-        setIsBootstrapped(true);
-        return true;
-    } catch (error) {
-        console.error('Bootstrap failed:', error);
-        return false;
-    }
-  };
-
   const fetchData = async () => {
     if (!isSignedIn || !userId || Platform.OS !== 'android' || !InteractionModule) return;
 
     try {
-      // 0. Ensure user exists before sending metrics
-      const userReady = await ensureUserExists();
-      if (!userReady) return;
-
       // 1. Get Interaction Metrics
       const dailyMetrics = await InteractionModule.getDailyMetrics();
       setMetrics(dailyMetrics);
