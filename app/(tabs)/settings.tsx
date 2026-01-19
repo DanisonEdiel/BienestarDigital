@@ -9,6 +9,7 @@ import { GradientButton } from '@/components/ui/GradientButton';
 import { api } from '@/lib/api';
 import { Snackbar, SegmentedButtons } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function SettingsScreen() {
   const [limitTime, setLimitTime] = useState(() => {
@@ -24,6 +25,7 @@ export default function SettingsScreen() {
   const { signOut } = useClerk();
   const { user } = useUser();
   const { getToken } = useAuth();
+  const queryClient = useQueryClient();
   
   // Ref to track if we have already loaded config from server to avoid overwriting user edits on re-renders
   const isLoadedRef = useRef(false);
@@ -95,6 +97,8 @@ export default function SettingsScreen() {
         params: { clerkId: user.id },
         headers,
       });
+
+      await queryClient.invalidateQueries({ queryKey: ['screen-time-summary'] });
 
       setSnackbarVisible(true);
     } catch (error) {

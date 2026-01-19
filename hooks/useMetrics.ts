@@ -100,7 +100,8 @@ export function useWellnessRecommendations() {
 }
 
 export function useScreenTimeSummary() {
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   return useQuery({
     queryKey: ['screen-time-summary', user?.id],
