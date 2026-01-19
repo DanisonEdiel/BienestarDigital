@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useClerk, useUser } from '@clerk/clerk-expo';
+import { useClerk, useUser, useAuth } from '@clerk/clerk-expo';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { TimeLimitInput } from '@/components/Settings/TimeLimitInput';
@@ -15,7 +15,8 @@ export default function SettingsScreen() {
   const [minutes, setMinutes] = useState('20');
   const [strictness, setStrictness] = useState('Estricto');
   const { signOut } = useClerk();
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchConfig = async () => {

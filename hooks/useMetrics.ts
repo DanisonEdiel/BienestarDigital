@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import { useUser } from '@clerk/clerk-expo';
+import { useUser, useAuth } from '@clerk/clerk-expo';
 import { useQuery } from '@tanstack/react-query';
 
 export type UsageMetric = {
@@ -46,7 +46,8 @@ export type EmotionSummary = {
 };
 
 export function useUsageMetrics(timeRange: 'day' | 'week' | 'month' = 'day') {
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   
   return useQuery({
     queryKey: ['metrics-usage', user?.id, timeRange],
@@ -63,7 +64,8 @@ export function useUsageMetrics(timeRange: 'day' | 'week' | 'month' = 'day') {
 }
 
 export function useInteractionHistory(timeRange: 'day' | 'week' | 'month' = 'week') {
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   return useQuery({
     queryKey: ['metrics-interactions', user?.id, timeRange],
@@ -80,7 +82,8 @@ export function useInteractionHistory(timeRange: 'day' | 'week' | 'month' = 'wee
 }
 
 export function useWellnessRecommendations() {
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   return useQuery({
     queryKey: ['recommendations', user?.id],
@@ -117,7 +120,8 @@ export function useScreenTimeSummary() {
 }
 
 export function useEmotionSummary() {
-  const { user, getToken } = useUser();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   return useQuery({
     queryKey: ['emotion-summary', user?.id],

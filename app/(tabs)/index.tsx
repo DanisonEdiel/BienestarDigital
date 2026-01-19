@@ -57,7 +57,7 @@ export default function HomeScreen() {
       {/* Permisos Warning: Uso de Apps */}
       {Platform.OS === 'android' && !hasPermission && (
         <View style={styles.permissionAlert}>
-            <Text style={styles.permissionText}>⚠️ Se requiere permiso de "Uso de Apps" para medir el tiempo.</Text>
+            <Text style={styles.permissionText}>⚠️ Se requiere permiso de Uso de Apps para medir el tiempo.</Text>
             <Button mode="contained" onPress={requestPermission} style={styles.permissionBtn} buttonColor="#856404">
                 Activar Permiso de Uso
             </Button>
@@ -67,7 +67,7 @@ export default function HomeScreen() {
       {/* Permisos Warning: Accesibilidad */}
       {Platform.OS === 'android' && !hasAccessibility && (
         <View style={[styles.permissionAlert, { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }]}>
-            <Text style={[styles.permissionText, { color: '#721C24' }]}>⚠️ Activa el "Servicio de Accesibilidad" para contar taps y scrolls.</Text>
+            <Text style={[styles.permissionText, { color: '#721C24' }]}>⚠️ Activa el Servicio de Accesibilidad para contar taps y scrolls.</Text>
             <Button mode="contained" onPress={requestAccessibility} style={styles.permissionBtn} buttonColor="#721C24">
                 Activar Accesibilidad
             </Button>

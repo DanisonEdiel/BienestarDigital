@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 
 type Params = Record<string, unknown> | undefined;
 type Id = string | number;
@@ -9,7 +9,7 @@ type UpdateInput<T> = { id: Id; data: T };
 
 export function useData<Q, C = unknown, U = unknown>(path: string, params?: Params) {
   const queryClient = useQueryClient();
-  const { getToken } = useUser();
+  const { getToken } = useAuth();
   const queryKey = [path, params ?? {}];
 
   const query = useQuery<Q>({

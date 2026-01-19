@@ -16,4 +16,9 @@ export const typography = {
     fontSize: 12,
     color: '#8E8E93',
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+  },
 };
