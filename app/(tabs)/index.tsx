@@ -11,7 +11,8 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
-import { useScreenTimeSummary } from '@/hooks/useMetrics';
+import { useEmotionSummary, useScreenTimeSummary } from '@/hooks/useMetrics';
+import { router } from 'expo-router';
 
 // Datos dummy para simular la UI de Figma
 const DAYS = [
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const { user, isLoaded } = useUser();
   const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility } = useDigitalWellbeing();
   const { data: screenSummary } = useScreenTimeSummary();
+  const { data: emotionSummary } = useEmotionSummary();
   
   if (!isLoaded) {
     return (
@@ -36,7 +38,8 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.contentContainer}>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -74,7 +77,11 @@ export default function HomeScreen() {
       {/* Estadísticas Dummy (Originales) */}
       <Text style={styles.sectionTitle}>Análisis de Bienestar</Text>
       <View style={styles.statsRow}>
-        <StatCard title="Estrés" subtitle="Últimas 24 horas" status="Alto">
+        <StatCard
+          title="Estrés"
+          subtitle="Últimas 24 horas"
+          status={emotionSummary?.label ?? 'Alto'}
+        >
           {/* Aquí iría un gráfico real, usamos placeholders visuales */}
           <View style={styles.chartPlaceholder}>
             {[40, 60, 30, 80, 50, 70, 40].map((h, i) => (
@@ -114,13 +121,21 @@ export default function HomeScreen() {
       <ProgramCard title="Lectura matutina" time="07h00 - 07h30" />
 
     </ScrollView>
+
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/assistant')}>
+        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA', // Fondo gris muy claro como en diseño
+    backgroundColor: '#F8F9FA',
+  },
+  scroll: {
+    flex: 1,
   },
   centerContent: {
     justifyContent: 'center',
@@ -216,5 +231,21 @@ const styles = StyleSheet.create({
   },
   permissionBtn: {
       marginTop: 5
-  }
+  },
+  fab: {
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
 });

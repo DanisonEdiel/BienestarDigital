@@ -37,6 +37,14 @@ export type ScreenTimeSummary = {
   warningLevel: 'none' | 'warning' | 'critical';
 };
 
+export type EmotionSummary = {
+  level: 'low' | 'medium' | 'high';
+  label: string;
+  emotion: string | null;
+  confidence: number;
+  recordDate: string | null;
+};
+
 export function useUsageMetrics(timeRange: 'day' | 'week' | 'month' = 'day') {
   const { user, getToken } = useUser();
   
@@ -105,5 +113,24 @@ export function useScreenTimeSummary() {
     },
     staleTime: 10_000,
     refetchInterval: 15_000,
+  });
+}
+
+export function useEmotionSummary() {
+  const { user, getToken } = useUser();
+
+  return useQuery({
+    queryKey: ['emotion-summary', user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const token = await getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const { data } = await api.get<EmotionSummary>(`/emotions/summary`, {
+        params: { clerkId: user!.id },
+        headers,
+      });
+      return data;
+    },
+    staleTime: 30_000,
   });
 }

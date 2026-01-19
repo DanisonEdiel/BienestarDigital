@@ -76,6 +76,7 @@ export default function RootLayout() {
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
               <Stack.Screen name="auth" options={{ headerShown: false }} />
               <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />
+              <Stack.Screen name="assistant" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style="auto" />
           </ThemeProvider>
