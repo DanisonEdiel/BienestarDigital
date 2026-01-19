@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
+import { useEffect } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as Notifications from 'expo-notifications';
@@ -18,6 +19,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -26,6 +29,18 @@ export const unstable_settings = {};
 export default function RootLayout() {
   WebBrowser.maybeCompleteAuthSession();
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    (async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+    })();
+  }, []);
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
