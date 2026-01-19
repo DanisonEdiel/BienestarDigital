@@ -11,6 +11,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
+import { useScreenTimeSummary } from '@/hooks/useMetrics';
 
 // Datos dummy para simular la UI de Figma
 const DAYS = [
@@ -24,6 +25,7 @@ const DAYS = [
 export default function HomeScreen() {
   const { user, isLoaded } = useUser();
   const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility } = useDigitalWellbeing();
+  const { data: screenSummary } = useScreenTimeSummary();
   
   if (!isLoaded) {
     return (
@@ -81,10 +83,22 @@ export default function HomeScreen() {
           </View>
         </StatCard>
         
-        <StatCard title="Tiempo uso" subtitle="Hoy" value="20 minutos restantes">
-           <View style={styles.circleChart}>
-              <Text style={styles.circleText}>85%</Text>
-           </View>
+        <StatCard
+          title="Tiempo uso"
+          subtitle="Hoy"
+          value={
+            screenSummary && screenSummary.dailyLimitSeconds > 0
+              ? `${Math.max(0, Math.round(screenSummary.remainingSeconds / 60))} minutos restantes`
+              : 'Sin límite configurado'
+          }
+        >
+          <View style={styles.circleChart}>
+            <Text style={styles.circleText}>
+              {screenSummary && screenSummary.dailyLimitSeconds > 0
+                ? `${screenSummary.usedPercent}%`
+                : '--'}
+            </Text>
+          </View>
         </StatCard>
       </View>
 

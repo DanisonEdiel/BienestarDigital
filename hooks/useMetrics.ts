@@ -27,6 +27,16 @@ export type WellnessRecommendation = {
   type: string; // e.g., 'activity', 'article'
 };
 
+export type ScreenTimeSummary = {
+  usageDate: string;
+  dailyLimitSeconds: number;
+  strictness: string | null;
+  usedSeconds: number;
+  remainingSeconds: number;
+  usedPercent: number;
+  warningLevel: 'none' | 'warning' | 'critical';
+};
+
 export function useUsageMetrics(timeRange: 'day' | 'week' | 'month' = 'day') {
   const { user, getToken } = useUser();
   
@@ -75,5 +85,25 @@ export function useWellnessRecommendations() {
       });
       return data;
     },
+  });
+}
+
+export function useScreenTimeSummary() {
+  const { user, getToken } = useUser();
+
+  return useQuery({
+    queryKey: ['screen-time-summary', user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const token = await getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const { data } = await api.get<ScreenTimeSummary>(`/metrics/screen-time-summary`, {
+        params: { clerkId: user!.id },
+        headers,
+      });
+      return data;
+    },
+    staleTime: 10_000,
+    refetchInterval: 15_000,
   });
 }

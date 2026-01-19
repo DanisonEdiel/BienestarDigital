@@ -1,24 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useClerk } from '@clerk/clerk-expo';
+import { useClerk, useUser } from '@clerk/clerk-expo';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { TimeLimitInput } from '@/components/Settings/TimeLimitInput';
 import { StrictnessSelector } from '@/components/Settings/StrictnessSelector';
 import { GradientButton } from '@/components/ui/GradientButton';
+import { api } from '@/lib/api';
 
 export default function SettingsScreen() {
   const [hours, setHours] = useState('3');
   const [minutes, setMinutes] = useState('20');
   const [strictness, setStrictness] = useState('Estricto');
   const { signOut } = useClerk();
+  const { user, getToken } = useUser();
 
-  const handleSave = () => {
-    // Save logic here
-    console.log('Settings saved:', { hours, minutes, strictness });
-    router.back();
+  useEffect(() => {
+    const fetchConfig = async () => {
+      if (!user) return;
+      try {
+        const token = await getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await api.get('/metrics/screen-time-summary', {
+          params: { clerkId: user.id },
+          headers,
+        });
+        const data = response.data;
+        if (data && data.dailyLimitSeconds && data.dailyLimitSeconds > 0) {
+          const totalMinutes = Math.round(data.dailyLimitSeconds / 60);
+          const h = Math.floor(totalMinutes / 60);
+          const m = totalMinutes % 60;
+          setHours(String(h));
+          setMinutes(String(m).padStart(1, '0'));
+          if (data.strictness === 'strict') {
+            setStrictness('Estricto');
+          } else if (data.strictness === 'flexible') {
+            setStrictness('Flexible');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load screen time configuration', error);
+      }
+    };
+    fetchConfig();
+  }, [user, getToken]);
+
+  const handleSave = async () => {
+    if (!user) {
+      Alert.alert('Error', 'Debes iniciar sesión para guardar la configuración');
+      return;
+    }
+
+    const h = parseInt(hours || '0', 10);
+    const m = parseInt(minutes || '0', 10);
+    const totalMinutes = h * 60 + m;
+
+    if (totalMinutes <= 0) {
+      Alert.alert('Tiempo inválido', 'Configura al menos 1 minuto de tiempo saludable diario');
+      return;
+    }
+
+    const dailyLimitSeconds = totalMinutes * 60;
+    const strictnessKey = strictness === 'Estricto' ? 'strict' : 'flexible';
+
+    try {
+      const token = await getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await api.post(
+        '/metrics/screen-time-limit',
+        { dailyLimitSeconds, strictness: strictnessKey },
+        {
+          params: { clerkId: user.id },
+          headers,
+        },
+      );
+      router.back();
+    } catch (error) {
+      console.error('Failed to save screen time limit', error);
+      Alert.alert('Error', 'No se pudo guardar la configuración. Intenta nuevamente.');
+    }
   };
 
   const handleSignOut = async () => {
