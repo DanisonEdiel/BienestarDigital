@@ -1,26 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useClerk, useUser, useAuth } from '@clerk/clerk-expo';
 import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
-import { TimeLimitInput } from '@/components/Settings/TimeLimitInput';
-import { StrictnessSelector } from '@/components/Settings/StrictnessSelector';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { api } from '@/lib/api';
+import { Snackbar, SegmentedButtons } from 'react-native-paper';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function SettingsScreen() {
-  const [hours, setHours] = useState('3');
-  const [minutes, setMinutes] = useState('20');
+  const [limitTime, setLimitTime] = useState(() => {
+    const d = new Date();
+    d.setHours(3);
+    d.setMinutes(20);
+    d.setSeconds(0);
+    return d;
+  });
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [strictness, setStrictness] = useState('Estricto');
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
   const { signOut } = useClerk();
   const { user } = useUser();
   const { getToken } = useAuth();
+  
+  // Ref to track if we have already loaded config from server to avoid overwriting user edits on re-renders
+  const isLoadedRef = useRef(false);
 
   useEffect(() => {
     const fetchConfig = async () => {
-      if (!user) return;
+      if (!user || isLoadedRef.current) return;
       try {
         const token = await getToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -33,13 +43,19 @@ export default function SettingsScreen() {
           const totalMinutes = Math.round(data.dailyLimitSeconds / 60);
           const h = Math.floor(totalMinutes / 60);
           const m = totalMinutes % 60;
-          setHours(String(h));
-          setMinutes(String(m).padStart(1, '0'));
+          
+          const newTime = new Date();
+          newTime.setHours(h);
+          newTime.setMinutes(m);
+          newTime.setSeconds(0);
+          setLimitTime(newTime);
+
           if (data.strictness === 'strict') {
             setStrictness('Estricto');
           } else if (data.strictness === 'flexible') {
             setStrictness('Flexible');
           }
+          isLoadedRef.current = true;
         }
       } catch (error) {
         console.error('Failed to load screen time configuration', error);
@@ -48,97 +64,143 @@ export default function SettingsScreen() {
     fetchConfig();
   }, [user, getToken]);
 
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || limitTime;
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
+    setLimitTime(currentDate);
+  };
+
   const handleSave = async () => {
-    if (!user) {
-      Alert.alert('Error', 'Debes iniciar sesión para guardar la configuración');
+    if (!user) return;
+    
+    const h = limitTime.getHours();
+    const m = limitTime.getMinutes();
+    const totalSeconds = (h * 3600) + (m * 60);
+
+    if (totalSeconds <= 0) {
+      Alert.alert('Error', 'El límite de tiempo debe ser mayor a 0');
       return;
     }
-
-    const h = parseInt(hours || '0', 10);
-    const m = parseInt(minutes || '0', 10);
-    const totalMinutes = h * 60 + m;
-
-    if (totalMinutes <= 0) {
-      Alert.alert('Tiempo inválido', 'Configura al menos 1 minuto de tiempo saludable diario');
-      return;
-    }
-
-    const dailyLimitSeconds = totalMinutes * 60;
-    const strictnessKey = strictness === 'Estricto' ? 'strict' : 'flexible';
 
     try {
       const token = await getToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await api.post(
-        '/metrics/screen-time-limit',
-        { dailyLimitSeconds, strictness: strictnessKey },
-        {
-          params: { clerkId: user.id },
-          headers,
-        },
-      );
-      router.back();
+      
+      await api.post('/metrics/screen-time-limit', {
+        dailyLimitSeconds: totalSeconds,
+        strictness: strictness === 'Estricto' ? 'strict' : 'flexible',
+      }, {
+        params: { clerkId: user.id },
+        headers,
+      });
+
+      setSnackbarVisible(true);
     } catch (error) {
       console.error('Failed to save screen time limit', error);
-      Alert.alert('Error', 'No se pudo guardar la configuración. Intenta nuevamente.');
+      Alert.alert('Error', 'No se pudieron guardar los cambios');
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace('/auth/sign-in');
     } catch (err) {
-      console.error('Error signing out:', err);
-      Alert.alert('Error', 'No se pudo cerrar sesión');
+      console.error('Error signing out', err);
     }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-           <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Ajustes</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Límites */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Límites diarios de pantalla</Text>
+          
+          <Text style={styles.label}>Tiempo límite total</Text>
+          
+          <TouchableOpacity 
+            style={styles.timeSelector} 
+            onPress={() => setShowTimePicker(true)}
+          >
+            <Text style={styles.timeSelectorText}>
+              {limitTime.getHours()}h {limitTime.getMinutes().toString().padStart(2, '0')}m
+            </Text>
+            <Ionicons name="time-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+
+          {showTimePicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={limitTime}
+              mode="time"
+              is24Hour={true}
+              display="spinner"
+              onChange={onTimeChange}
+            />
+          )}
+
+          <View style={{ height: spacing.lg }} />
+
+          <Text style={styles.label}>Nivel de restricción</Text>
+          <SegmentedButtons
+            value={strictness}
+            onValueChange={setStrictness}
+            buttons={[
+              {
+                value: 'Estricto',
+                label: 'Estricto',
+                style: strictness === 'Estricto' ? { backgroundColor: '#E8EAF6' } : {},
+              },
+              {
+                value: 'Flexible',
+                label: 'Flexible',
+                style: strictness === 'Flexible' ? { backgroundColor: '#E8EAF6' } : {},
+              },
+            ]}
+            style={styles.segmentedButton}
+            theme={{ colors: { secondaryContainer: colors.primary + '20', onSecondaryContainer: colors.primary } }}
+          />
+        </View>
+
+        <View style={styles.spacer} />
+
+        <GradientButton
+          title="Guardar cambios"
+          onPress={handleSave}
+        />
+
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
+          <Text style={styles.signOutText}>Cerrar sesión</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ajustes de Límites</Text>
-        <View style={{ width: 40 }} /> 
-      </View>
+      </ScrollView>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Límites diarios de pantalla</Text>
-        <Text style={styles.label}>Tiempo saludable diario</Text>
-        <TimeLimitInput 
-          hours={hours} 
-          minutes={minutes} 
-          onHoursChange={setHours} 
-          onMinutesChange={setMinutes} 
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>¿Qué tan estricto quieres que sea?</Text>
-        <StrictnessSelector 
-          value={strictness} 
-          onPress={() => {
-            // Placeholder for dropdown logic
-            setStrictness(strictness === 'Estricto' ? 'Flexible' : 'Estricto');
-          }} 
-        />
-      </View>
-
-      <View style={styles.spacer} />
-
-      <GradientButton title="Guardar Configuración" onPress={handleSave} />
-
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
-        <Text style={styles.signOutText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
-
-    </ScrollView>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={{ backgroundColor: colors.primary, marginBottom: 20 }}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+          textColor: '#FFFFFF',
+        }}
+      >
+        Cambios guardados correctamente
+      </Snackbar>
+    </View>
   );
 }
 
@@ -181,6 +243,24 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
+  timeSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    padding: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  timeSelectorText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  segmentedButton: {
+    marginTop: spacing.sm,
+  },
   spacer: {
     flex: 1,
     minHeight: 40,
@@ -189,13 +269,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.lg,
     padding: spacing.md,
-    gap: spacing.xs,
+    marginTop: spacing.xl,
   },
   signOutText: {
+    marginLeft: spacing.sm,
     color: '#FF3B30',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });
