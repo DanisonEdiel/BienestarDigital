@@ -95,9 +95,9 @@ export default function HomeScreen() {
           subtitle="Hoy"
           value={
             screenSummary && screenSummary.dailyLimitSeconds > 0
-              ? `${Math.max(0, Math.round(screenSummary.remainingSeconds / 60))} minutos restantes`
+              ? <CountdownText seconds={screenSummary.remainingSeconds} />
               : 'Sin límite configurado'
-          }
+          } 
         >
           <View style={styles.circleChart}>
             <Text style={styles.circleText}>
@@ -249,3 +249,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
 });
+
+const CountdownText = ({ seconds }: { seconds: number }) => {
+  const [timeLeft, setTimeLeft] = React.useState(seconds);
+
+  React.useEffect(() => {
+    setTimeLeft(seconds);
+  }, [seconds]);
+
+  React.useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
+
+  const formatTime = (totalSeconds: number) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    return `${m}m ${s}s restantes`;
+  };
+
+  return <>{formatTime(timeLeft)}</>;
+};

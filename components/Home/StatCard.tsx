@@ -6,7 +6,7 @@ import { spacing } from '@/constants/theme/spacing';
 type StatCardProps = {
   title: string;
   subtitle?: string;
-  value?: string;
+  value?: string | React.ReactNode;
   status?: string;
   children?: React.ReactNode;
   style?: object;
