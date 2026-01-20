@@ -13,6 +13,8 @@ import { ActivityIndicator, Button } from 'react-native-paper';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
 import { useEmotionSummary, useScreenTimeSummary } from '@/hooks/useMetrics';
 import { router } from 'expo-router';
+import { RefreshControl } from 'react-native';
+import { CircularProgress } from '@/components/ui/CircularProgress';
 
 // Datos dummy para simular la UI de Figma
 const DAYS = [
@@ -25,10 +27,23 @@ const DAYS = [
 
 export default function HomeScreen() {
   const { user, isLoaded } = useUser();
-  const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility } = useDigitalWellbeing();
-  const { data: screenSummary } = useScreenTimeSummary();
-  const { data: emotionSummary } = useEmotionSummary();
-  
+  const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility, refresh: refreshWellbeing } = useDigitalWellbeing();
+  const { data: screenSummary, refetch: refetchScreen, isLoading: isScreenLoading, isFetching: isScreenFetching } = useScreenTimeSummary();
+  const { data: emotionSummary, refetch: refetchEmotion, isLoading: isEmotionLoading, isFetching: isEmotionFetching } = useEmotionSummary();
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchScreen(),
+        refetchEmotion(),
+        Promise.resolve(refreshWellbeing()),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchScreen, refetchEmotion, refreshWellbeing]);
+
   if (!isLoaded) {
     return (
       <ThemedView style={[styles.container, styles.centerContent]}>
@@ -39,74 +54,96 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.contentContainer}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Hola, {user?.firstName || 'Usuario'}</Text>
-          <Text style={styles.subtitle}>Desconecta para conectar</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationBtn}>
-           <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={<RefreshControl refreshing={refreshing || isScreenFetching || isEmotionFetching} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+    {/* Header */}
+    <View style={styles.header}>
+      <View>
+        <Text style={styles.greeting}>Hola, {user?.firstName || 'Usuario'}</Text>
+        <Text style={styles.subtitle}>Desconecta para conectar</Text>
       </View>
+      <TouchableOpacity style={styles.notificationBtn}>
+           <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
+      </TouchableOpacity>
+    </View>
 
-      {/* Selector de días */}
-      <DaySelector days={DAYS} />
+    {/* Selector de días */}
+            <DaySelector days={DAYS} progressPercent={screenSummary?.usedPercent ?? 0} />
+            {isScreenLoading || isScreenFetching ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: spacing.xs }} />
+            ) : null}
 
-      {/* Permisos Warning: Uso de Apps */}
-      {Platform.OS === 'android' && !hasPermission && (
-        <View style={styles.permissionAlert}>
-            <Text style={styles.permissionText}>⚠️ Se requiere permiso de Uso de Apps para medir el tiempo.</Text>
-            <Button mode="contained" onPress={requestPermission} style={styles.permissionBtn} buttonColor="#856404">
-                Activar Permiso de Uso
-            </Button>
-        </View>
-      )}
+    {/* Permisos Warning: Uso de Apps */}
+    {Platform.OS === 'android' && !hasPermission && (
+      <View style={styles.permissionAlert}>
+          <Text style={styles.permissionText}>⚠️ Se requiere permiso de Uso de Apps para medir el tiempo.</Text>
+          <Button mode="contained" onPress={requestPermission} style={styles.permissionBtn} buttonColor="#856404">
+              Activar Permiso de Uso
+          </Button>
+      </View>
+    )}
 
-      {/* Permisos Warning: Accesibilidad */}
-      {Platform.OS === 'android' && !hasAccessibility && (
-        <View style={[styles.permissionAlert, { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }]}>
-            <Text style={[styles.permissionText, { color: '#721C24' }]}>⚠️ Activa el Servicio de Accesibilidad para contar taps y scrolls.</Text>
-            <Button mode="contained" onPress={requestAccessibility} style={styles.permissionBtn} buttonColor="#721C24">
-                Activar Accesibilidad
-            </Button>
-        </View>
-      )}
+    {/* Permisos Warning: Accesibilidad */}
+    {Platform.OS === 'android' && !hasAccessibility && (
+      <View style={[styles.permissionAlert, { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }]}>
+          <Text style={[styles.permissionText, { color: '#721C24' }]}>⚠️ Activa el Servicio de Accesibilidad para contar taps y scrolls.</Text>
+          <Button mode="contained" onPress={requestAccessibility} style={styles.permissionBtn} buttonColor="#721C24">
+              Activar Accesibilidad
+          </Button>
+      </View>
+    )}
 
-      {/* Estadísticas Dummy (Originales) */}
-      <Text style={styles.sectionTitle}>Análisis de Bienestar</Text>
-      <View style={styles.statsRow}>
-        <StatCard
-          title="Estrés"
-          subtitle="Últimas 24 horas"
-          status={emotionSummary?.label ?? 'Alto'}
-        >
-          {/* Aquí iría un gráfico real, usamos placeholders visuales */}
+    {/* Estadísticas Dummy (Originales) */}
+    <Text style={styles.sectionTitle}>Análisis de Bienestar</Text>
+    <View style={styles.statsRow}>
+      <StatCard
+        title="Estrés"
+        subtitle="Últimas 24 horas"
+        status={isEmotionLoading || isEmotionFetching ? 'Actualizando...' : (emotionSummary?.label ?? 'Alto')}
+      >
+        {isEmotionLoading || isEmotionFetching ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : (
           <View style={styles.chartPlaceholder}>
             {[40, 60, 30, 80, 50, 70, 40].map((h, i) => (
               <View key={i} style={[styles.bar, { height: h, backgroundColor: i % 2 === 0 ? '#BFD6FE' : '#5B8DEF' }]} />
             ))}
           </View>
-        </StatCard>
+        )}
+      </StatCard>
         
         <StatCard
-          title="Tiempo uso"
-          subtitle="Hoy"
-          value={
-            screenSummary && screenSummary.dailyLimitSeconds > 0
-              ? <CountdownText seconds={screenSummary.remainingSeconds} />
-              : 'Sin límite configurado'
-          } 
-        >
-          <View style={styles.circleChart}>
-            <Text style={styles.circleText}>
-              {screenSummary && screenSummary.dailyLimitSeconds > 0
-                ? `${screenSummary.usedPercent}%`
-                : '--'}
-            </Text>
-          </View>
-        </StatCard>
+           title="Tiempo uso"
+           subtitle="Hoy"
+           value={
+             screenSummary && screenSummary.dailyLimitSeconds > 0
+               ? (isScreenLoading || isScreenFetching
+                   ? 'Actualizando...'
+                   : <CountdownText seconds={screenSummary.remainingSeconds} />)
+               : 'Sin límite configurado'
+           } 
+         >
+           {isScreenLoading || isScreenFetching ? (
+             <ActivityIndicator size="small" color={colors.primary} />
+           ) : (
+             <CircularProgress
+               size={80}
+               strokeWidth={8}
+               percent={screenSummary && screenSummary.dailyLimitSeconds > 0 ? screenSummary.usedPercent : 0}
+               trackColor={'#E0EBFF'}
+               progressColor={'#5B8DEF'}
+             >
+               <Text style={styles.circleText}>
+                 {screenSummary && screenSummary.dailyLimitSeconds > 0
+                   ? `${screenSummary.usedPercent}%`
+                   : '--'}
+               </Text>
+             </CircularProgress>
+           )}
+         </StatCard>
       </View>
 
       {/* Programas */}

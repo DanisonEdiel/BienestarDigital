@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme/colors';
@@ -27,8 +27,21 @@ const APPS_DATA_FALLBACK = [
 ];
 
 export default function AnalyticsScreen() {
-  const { data: interactionHistory, isLoading } = useInteractionHistory('week');
-  const { metrics: todayMetrics, appUsage: todayAppUsage } = useDigitalWellbeing();
+  // ... existing code ...
+  const { data: interactionHistory, isLoading, isFetching, refetch: refetchHistory } = useInteractionHistory('week');
+  const { metrics: todayMetrics, appUsage: todayAppUsage, refresh: refreshWellbeing } = useDigitalWellbeing();
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchHistory(),
+        Promise.resolve(refreshWellbeing()),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchHistory, refreshWellbeing]);
 
   // Process metrics for chart if available (based on interactions: taps + scrolls)
   const chartData = useMemo(() => {
@@ -209,7 +222,7 @@ export default function AnalyticsScreen() {
   }, [todayMetrics, todayAppUsage]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={colors.primary} />}>
       {/* Header Customization for Drawer/Stack */}
       <Stack.Screen options={{ headerShown: false }} />
       
@@ -239,10 +252,18 @@ export default function AnalyticsScreen() {
       )}
 
       {/* Stats Row: Interacciones reales de hoy */}
-      <StatSummaryRow stats={interactionStats} />
+      {(isLoading || isFetching || refreshing) ? (
+        <ActivityIndicator size="small" color={colors.primary} />
+      ) : (
+        <StatSummaryRow stats={interactionStats} />
+      )}
 
       {/* App List */}
-      <AppUsageList apps={appsData} />
+      {(isLoading || isFetching || refreshing) ? (
+        <ActivityIndicator size="small" color={colors.primary} />
+      ) : (
+        <AppUsageList apps={appsData} />
+      )}
 
     </ScrollView>
   );

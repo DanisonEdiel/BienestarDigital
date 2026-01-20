@@ -2,59 +2,72 @@ import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Animated } from 'react-native';
 
 type Day = {
   label: string;
   number: string;
   active?: boolean;
 };
-
+ 
 type DaySelectorProps = {
   days: Day[];
+  progressPercent?: number; // 0-100 dinámico
 };
-
-export const DaySelector = ({ days }: DaySelectorProps) => {
+ 
+export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) => {
+  const animated = React.useRef(new Animated.Value(progressPercent)).current;
+  React.useEffect(() => {
+    Animated.timing(animated, {
+      toValue: progressPercent,
+      duration: 800,
+      useNativeDriver: false,
+    }).start();
+  }, [progressPercent]);
+  const widthInterpolate = animated.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
   return (
-    <View style={styles.container}>
-      <View style={styles.daysRow}>
-        {days.map((day, index) => {
-          if (day.active) {
-            return (
-              <LinearGradient
-                key={`${day.label}-${index}`}
-                colors={['#5B8DEF', '#8EB4FF']} // Ajustar gradiente según diseño
-                style={[styles.dayItem, styles.dayItemActive]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={[styles.dayText, styles.dayTextActive]}>{day.label}</Text>
-                <Text style={[styles.dayNumber, styles.dayTextActive]}>{day.number}</Text>
-              </LinearGradient>
-            );
-          }
-          return (
-            <View key={`${day.label}-${index}`} style={styles.dayItem}>
-              <Text style={styles.dayText}>{day.label}</Text>
-              <Text style={styles.dayNumber}>{day.number}</Text>
-            </View>
-          );
-        })}
-      </View>
-      
-      {/* Barra de progreso ejemplo */}
-      <View style={styles.progressContainer}>
-         <View style={styles.progressBarBackground}>
-            <View style={[styles.progressBarFill, { width: '75%' }]} />
-         </View>
-         <View style={styles.progressTextRow}>
+     <View style={styles.container}>
+       <View style={styles.daysRow}>
+         {days.map((day, index) => {
+           if (day.active) {
+             return (
+               <LinearGradient
+                 key={`${day.label}-${index}`}
+                 colors={['#5B8DEF', '#8EB4FF']} // Ajustar gradiente según diseño
+                 style={[styles.dayItem, styles.dayItemActive]}
+                 start={{ x: 0, y: 0 }}
+                 end={{ x: 1, y: 1 }}
+               >
+                 <Text style={[styles.dayText, styles.dayTextActive]}>{day.label}</Text>
+                 <Text style={[styles.dayNumber, styles.dayTextActive]}>{day.number}</Text>
+               </LinearGradient>
+             );
+           }
+           return (
+             <View key={`${day.label}-${index}`} style={styles.dayItem}>
+               <Text style={styles.dayText}>{day.label}</Text>
+               <Text style={styles.dayNumber}>{day.number}</Text>
+             </View>
+           );
+         })}
+       </View>
+       
+       {/* Barra de progreso dinámica */}
+       <View style={styles.progressContainer}>
+          <View style={styles.progressBarBackground}>
+            <Animated.View style={[styles.progressBarFill, { width: widthInterpolate }]} />
+          </View>
+          <View style={styles.progressTextRow}>
              <Text style={styles.progressLabel}>Riesgo de bloqueo</Text>
-             <Text style={styles.progressValue}>75%</Text>
-         </View>
-      </View>
-    </View>
-  );
-};
+             <Text style={styles.progressValue}>{Math.round(progressPercent)}%</Text>
+          </View>
+       </View>
+     </View>
+   );
+ };
 
 const styles = StyleSheet.create({
   container: {
