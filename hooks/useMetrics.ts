@@ -139,3 +139,33 @@ export function useEmotionSummary() {
     staleTime: 30_000,
   });
 }
+
+export type BlockingRisk = {
+  percent: number;
+  level: 'low' | 'medium' | 'high' | 'critical';
+  usedPercent: number;
+  totalInteractions: number;
+  emotionLevel: 'low' | 'medium' | 'high';
+  usageDate: string;
+};
+
+export function useBlockingRisk() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+
+  return useQuery({
+    queryKey: ['blocking-risk', user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const token = await getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const { data } = await api.get<BlockingRisk>(`/metrics/blocking-risk`, {
+        params: { clerkId: user!.id },
+        headers,
+      });
+      return data;
+    },
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+}
