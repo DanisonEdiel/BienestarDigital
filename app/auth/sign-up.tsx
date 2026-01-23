@@ -1,18 +1,17 @@
-import { useState } from 'react';
-import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
-import { useSignUp } from '@clerk/clerk-expo';
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { router, Link } from 'expo-router';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { spacing } from '@/constants/theme/spacing';
+import { useSignUp } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SignUpScreen() {
-  const { signUp, setActive, isLoaded } = useSignUp();
+  const { signUp, isLoaded } = useSignUp();
   const theme = useTheme();
-  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,7 +36,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.header}>
         <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
           <Ionicons name="person-add-outline" size={40} color={theme.colors.primary} />
@@ -103,7 +102,7 @@ export default function SignUpScreen() {
           </Link>
         </View>
       </View>
-    </ThemedView>
+    </View>
   );
 }
 

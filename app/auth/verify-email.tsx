@@ -1,8 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { spacing } from '@/constants/theme/spacing';
 import { useBootstrapMutation } from '@/hooks/auth/useBootstrapMutation';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserStore } from '@/store/userStore';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,12 +8,13 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { signUp, setActive, isLoaded } = useSignUp();
-  const colorScheme = useColorScheme();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +56,7 @@ export default function VerifyEmailScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.header}>
         <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
           <Ionicons name="mail-unread-outline" size={40} color={theme.colors.primary} />
@@ -107,7 +106,7 @@ export default function VerifyEmailScreen() {
           Reenviar código
         </Button>
       </View>
-    </ThemedView>
+    </View>
   );
 }
 

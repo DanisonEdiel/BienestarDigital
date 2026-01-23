@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useClerk, useUser, useAuth } from '@clerk/clerk-expo';
-import { spacing } from '@/constants/theme/spacing';
 import { GradientButton } from '@/components/ui/GradientButton';
+import { spacing } from '@/constants/theme/spacing';
 import { api } from '@/lib/api';
-import { Snackbar, SegmentedButtons, useTheme } from 'react-native-paper';
+import { useAuth, useClerk, useUser } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
+import { Stack, router } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
     flexGrow: 1,
   },
   header: {

@@ -9,6 +9,7 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser, useAuth } from '@clerk/clerk-expo';
@@ -26,6 +27,7 @@ type ChatMessage = {
 
 export default function AssistantScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { user } = useUser();
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -110,7 +112,7 @@ export default function AssistantScreen() {
         }}
       />
       <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={80}
       >
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.md,
   },
   iconBtn: {

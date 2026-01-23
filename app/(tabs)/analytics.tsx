@@ -1,25 +1,14 @@
-import React, { useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { spacing } from '@/constants/theme/spacing';
-import { UsageChart } from '@/components/Analytics/UsageChart';
-import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
 import { AppUsageList } from '@/components/Analytics/AppUsageList';
-import { useInteractionHistory } from '@/hooks/useMetrics';
+import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
+import { UsageChart } from '@/components/Analytics/UsageChart';
+import { spacing } from '@/constants/theme/spacing';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
+import { useInteractionHistory } from '@/hooks/useMetrics';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, router } from 'expo-router';
+import React, { useMemo } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
-
-// Dummy Data (Fallback)
-const CHART_DATA_FALLBACK = [
-  { day: 'Dom', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Lun', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Mar', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Mie', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Jue', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Vie', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-  { day: 'Sab', tapsValue: 0, scrollsValue: 0, tapsRaw: 0, scrollsRaw: 0 },
-];
 
 const APPS_DATA_FALLBACK = [
   { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%' },
@@ -223,8 +212,9 @@ export default function AnalyticsScreen() {
   }, [todayMetrics, todayAppUsage, theme.colors.primary]);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
-      {/* Header Customization for Drawer/Stack */}
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
+        {/* Header Customization for Drawer/Stack */}
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Custom Header */}
@@ -266,7 +256,8 @@ export default function AnalyticsScreen() {
         <AppUsageList apps={appsData} />
       )}
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -276,7 +267,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
   },
   header: {
     flexDirection: 'row',

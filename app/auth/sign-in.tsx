@@ -1,7 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { spacing } from '@/constants/theme/spacing';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useOAuth, useSignIn } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
@@ -14,7 +13,6 @@ export default function SignInScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { signIn, setActive, isLoaded } = useSignIn();
-  const colorScheme = useColorScheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);

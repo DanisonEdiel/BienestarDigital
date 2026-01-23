@@ -13,13 +13,15 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Button, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { user, isLoaded } = useUser();
-  const { metrics, appUsage, hasPermission, hasAccessibility, requestPermission, requestAccessibility, refresh: refreshWellbeing } = useDigitalWellbeing();
+  const { hasPermission, hasAccessibility, requestPermission, requestAccessibility, refresh: refreshWellbeing } = useDigitalWellbeing();
   const { data: screenSummary, refetch: refetchScreen, isLoading: isScreenLoading, isFetching: isScreenFetching } = useScreenTimeSummary();
   const { data: emotionSummary, refetch: refetchEmotion, isLoading: isEmotionLoading, isFetching: isEmotionFetching } = useEmotionSummary();
   const { data: blockingRisk, isLoading: isRiskLoading, isFetching: isRiskFetching, refetch: refetchRisk } = useBlockingRisk();
@@ -62,7 +64,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.contentContainer}
@@ -188,7 +190,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
   },
   header: {
     flexDirection: 'row',
