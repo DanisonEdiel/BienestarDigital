@@ -9,9 +9,11 @@ import { Stack, router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const [limitTime, setLimitTime] = useState(() => {
     const d = new Date();
     d.setHours(3);
@@ -116,7 +118,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Header */}

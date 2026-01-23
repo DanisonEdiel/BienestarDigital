@@ -9,6 +9,7 @@ import { Stack, router } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const APPS_DATA_FALLBACK = [
   { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%' },
@@ -21,6 +22,7 @@ export default function AnalyticsScreen() {
   const { data: interactionHistory, isLoading, isFetching, refetch: refetchHistory } = useInteractionHistory('week');
   const { metrics: todayMetrics, appUsage: todayAppUsage, refresh: refreshWellbeing } = useDigitalWellbeing();
   const [refreshing, setRefreshing] = React.useState(false);
+  const insets = useSafeAreaInsets();
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     try {
@@ -212,12 +214,10 @@ export default function AnalyticsScreen() {
   }, [todayMetrics, todayAppUsage, theme.colors.primary]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
-        {/* Header Customization for Drawer/Stack */}
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Custom Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
            <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
@@ -228,28 +228,24 @@ export default function AnalyticsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity>
           <Text style={[styles.tabText, styles.tabTextActive, { color: theme.colors.primary }]}>Semana</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Chart */}
       {isLoading ? (
           <ActivityIndicator size="large" color={theme.colors.primary} />
       ) : (
           <UsageChart data={chartData} />
       )}
 
-      {/* Stats Row: Interacciones reales de hoy */}
       {(isLoading || isFetching || refreshing) ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
         <StatSummaryRow stats={interactionStats} />
       )}
 
-      {/* App List */}
       {(isLoading || isFetching || refreshing) ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
