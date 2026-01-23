@@ -1,8 +1,8 @@
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, View, Animated } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 type Day = {
   label: string;
@@ -16,7 +16,9 @@ type DaySelectorProps = {
 };
  
 export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) => {
+  const theme = useTheme();
   const animated = React.useRef(new Animated.Value(progressPercent)).current;
+  
   React.useEffect(() => {
     Animated.timing(animated, {
       toValue: progressPercent,
@@ -24,32 +26,34 @@ export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) =>
       useNativeDriver: false,
     }).start();
   }, [progressPercent]);
+  
   const widthInterpolate = animated.interpolate({
     inputRange: [0, 100],
     outputRange: ['0%', '100%'],
   });
+
   return (
-     <View style={styles.container}>
+     <View style={[styles.container, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }]}>
        <View style={styles.daysRow}>
          {days.map((day, index) => {
            if (day.active) {
              return (
                <LinearGradient
                  key={`${day.label}-${index}`}
-                 colors={['#5B8DEF', '#8EB4FF']} // Ajustar gradiente según diseño
+                 colors={[theme.colors.primary, theme.colors.primaryContainer]} 
                  style={[styles.dayItem, styles.dayItemActive]}
                  start={{ x: 0, y: 0 }}
                  end={{ x: 1, y: 1 }}
                >
-                 <Text style={[styles.dayText, styles.dayTextActive]}>{day.label}</Text>
-                 <Text style={[styles.dayNumber, styles.dayTextActive]}>{day.number}</Text>
+                 <Text style={[styles.dayText, styles.dayTextActive, { color: theme.colors.onPrimary }]}>{day.label}</Text>
+                 <Text style={[styles.dayNumber, styles.dayTextActive, { color: theme.colors.onPrimary }]}>{day.number}</Text>
                </LinearGradient>
              );
            }
            return (
-             <View key={`${day.label}-${index}`} style={styles.dayItem}>
-               <Text style={styles.dayText}>{day.label}</Text>
-               <Text style={styles.dayNumber}>{day.number}</Text>
+             <View key={`${day.label}-${index}`} style={[styles.dayItem, { backgroundColor: theme.colors.surface }]}>
+               <Text style={[styles.dayText, { color: theme.colors.onSurfaceVariant }]}>{day.label}</Text>
+               <Text style={[styles.dayNumber, { color: theme.colors.onSurface }]}>{day.number}</Text>
              </View>
            );
          })}
@@ -57,12 +61,12 @@ export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) =>
        
        {/* Barra de progreso dinámica */}
        <View style={styles.progressContainer}>
-          <View style={styles.progressBarBackground}>
-            <Animated.View style={[styles.progressBarFill, { width: widthInterpolate }]} />
+          <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <Animated.View style={[styles.progressBarFill, { width: widthInterpolate, backgroundColor: theme.colors.primary }]} />
           </View>
           <View style={styles.progressTextRow}>
-             <Text style={styles.progressLabel}>Riesgo de bloqueo</Text>
-             <Text style={styles.progressValue}>{Math.round(progressPercent)}%</Text>
+             <Text style={[styles.progressLabel, { color: theme.colors.onSurfaceVariant }]}>Riesgo de bloqueo</Text>
+             <Text style={[styles.progressValue, { color: theme.colors.onSurface }]}>{Math.round(progressPercent)}%</Text>
           </View>
        </View>
      </View>
@@ -71,7 +75,6 @@ export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) =>
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     padding: spacing.md,
     borderRadius: 24,
     // Sombra suave estilo iOS
@@ -82,7 +85,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
   },
   daysRow: {
     flexDirection: 'row',
@@ -95,36 +97,31 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.white,
   },
   dayItemActive: {
     // Background color handled by LinearGradient
   },
   dayText: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginBottom: 4,
   },
   dayNumber: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   dayTextActive: {
-    color: colors.white,
+    // Colors handled inline
   },
   progressContainer: {
     marginTop: spacing.sm,
   },
   progressBarBackground: {
     height: 6,
-    backgroundColor: '#F2F4F7',
     borderRadius: 3,
     marginBottom: spacing.xs,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   progressTextRow: {
@@ -133,11 +130,9 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
   },
   progressValue: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
 });

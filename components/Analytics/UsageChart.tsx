@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
-
+import { useTheme } from 'react-native-paper';
 type ChartData = {
   day: string;
   tapsValue: number; // 0 to 100 relative to max taps
@@ -17,12 +16,14 @@ type UsageChartProps = {
 };
 
 export const UsageChart = ({ data }: UsageChartProps) => {
+  const theme = useTheme();
+
   return (
     <View style={styles.container}>
       {/* Y-Axis Labels */}
       <View style={styles.yAxis}>
         {['Crítico', 'Muy Alto', 'Alto', 'Medio', 'Bajo', '0'].map((label, index) => (
-          <Text key={index} style={styles.yAxisLabel}>{label}</Text>
+          <Text key={index} style={[styles.yAxisLabel, { color: theme.colors.onSurfaceVariant }]}>{label}</Text>
         ))}
       </View>
 
@@ -33,9 +34,9 @@ export const UsageChart = ({ data }: UsageChartProps) => {
             <View key={index} style={styles.barColumn}>
               {/* Tooltip for Peak */}
               {item.isPeak && (
-                <View style={styles.tooltip}>
-                  <Text style={styles.tooltipText}>Pico</Text>
-                  <View style={styles.tooltipArrow} />
+                <View style={[styles.tooltip, { backgroundColor: theme.colors.inverseSurface }]}>
+                  <Text style={[styles.tooltipText, { color: theme.colors.inverseOnSurface }]}>Pico</Text>
+                  <View style={[styles.tooltipArrow, { borderTopColor: theme.colors.inverseSurface }]} />
                 </View>
               )}
               
@@ -49,7 +50,7 @@ export const UsageChart = ({ data }: UsageChartProps) => {
                         styles.barFill, 
                         { 
                           height: `${item.tapsValue}%`,
-                          backgroundColor: colors.primary 
+                          backgroundColor: theme.colors.primary 
                         }
                       ]} 
                     />
@@ -64,7 +65,7 @@ export const UsageChart = ({ data }: UsageChartProps) => {
                         styles.barFill, 
                         { 
                           height: `${item.scrollsValue}%`,
-                          backgroundColor: '#FF9F0A' // Orange for scrolls
+                          backgroundColor: theme.colors.secondary // Using secondary for scrolls
                         }
                       ]} 
                     />
@@ -72,7 +73,7 @@ export const UsageChart = ({ data }: UsageChartProps) => {
                 </View>
               </View>
 
-              <Text style={styles.xLabel}>{item.day}</Text>
+              <Text style={[styles.xLabel, { color: theme.colors.onSurfaceVariant }]}>{item.day}</Text>
             </View>
           ))}
         </View>
@@ -80,12 +81,12 @@ export const UsageChart = ({ data }: UsageChartProps) => {
         {/* Legend */}
         <View style={styles.legendContainer}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-            <Text style={styles.legendText}>Taps</Text>
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.primary }]} />
+            <Text style={[styles.legendText, { color: theme.colors.onSurfaceVariant }]}>Taps</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#FF9F0A' }]} />
-            <Text style={styles.legendText}>Scrolls</Text>
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.secondary }]} />
+            <Text style={[styles.legendText, { color: theme.colors.onSurfaceVariant }]}>Scrolls</Text>
           </View>
         </View>
       </View>
@@ -107,7 +108,6 @@ const styles = StyleSheet.create({
   },
   yAxisLabel: {
     fontSize: 10,
-    color: colors.textSecondary,
     textAlign: 'right',
   },
   chartArea: {
@@ -152,10 +152,8 @@ const styles = StyleSheet.create({
   xLabel: {
     marginTop: spacing.xs,
     fontSize: 12,
-    color: colors.textSecondary,
   },
   tooltip: {
-    backgroundColor: '#1C1C1E',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -166,7 +164,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   tooltipText: {
-    color: colors.white,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -180,7 +177,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 4,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#1C1C1E',
     position: 'absolute',
     bottom: -4,
   },
@@ -204,6 +200,5 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: colors.textSecondary,
   },
 });

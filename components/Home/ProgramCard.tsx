@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
 
 type ProgramCardProps = {
   title: string;
@@ -10,18 +10,20 @@ type ProgramCardProps = {
 };
 
 export const ProgramCard = ({ title, time }: ProgramCardProps) => {
+  const theme = useTheme();
+  
   return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
-         <Ionicons name="cafe" size={20} color="#1C1C1E" />
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+      <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+         <Ionicons name="cafe" size={20} color={theme.colors.onSurface} />
       </View>
       <View style={styles.info}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.time}>{time}</Text>
+        <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>
+        <Text style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>{time}</Text>
       </View>
       <View style={styles.avatarContainer}>
          {/* Placeholder para avatar */}
-         <View style={styles.avatar} />
+         <View style={[styles.avatar, { backgroundColor: theme.colors.surfaceDisabled }]} />
       </View>
     </View>
   );
@@ -29,7 +31,6 @@ export const ProgramCard = ({ title, time }: ProgramCardProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: 20,
     padding: spacing.md,
     flexDirection: 'row',
@@ -46,7 +47,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: colors.grayLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
@@ -57,12 +57,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: 2,
   },
   time: {
     fontSize: 12,
-    color: colors.textSecondary,
   },
   avatarContainer: {
     marginLeft: spacing.sm,
@@ -71,6 +69,5 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#ddd',
   },
 });

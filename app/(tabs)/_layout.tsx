@@ -1,11 +1,12 @@
 import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
-import { colors } from '@/constants/theme/colors';
+import { useTheme } from 'react-native-paper';
 import { useInteractionSync } from '@/hooks/useInteractionSync';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 
 export default function TabsLayout() {
+  const theme = useTheme();
   useInteractionSync();
   useAppBootstrap();
 
@@ -15,12 +16,12 @@ export default function TabsLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: colors.primary,
-            tabBarInactiveTintColor: colors.textSecondary,
+            tabBarActiveTintColor: theme.colors.primary,
+            tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
             tabBarStyle: {
-              backgroundColor: colors.white,
+              backgroundColor: theme.colors.surface,
               borderTopWidth: 1,
-              borderTopColor: colors.grayLight,
+              borderTopColor: theme.colors.outlineVariant,
               height: 60,
               paddingBottom: 8,
               paddingTop: 8,

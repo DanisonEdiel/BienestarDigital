@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { Button, HelperText, TextInput } from 'react-native-paper';
+import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
 import { useSignUp } from '@clerk/clerk-expo';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { router, Link } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
+  const theme = useTheme();
   const colorScheme = useColorScheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,8 +39,8 @@ export default function SignUpScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="person-add-outline" size={40} color={colors.primary} />
+        <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
+          <Ionicons name="person-add-outline" size={40} color={theme.colors.primary} />
         </View>
         <ThemedText type="title" style={styles.brand}>Crear cuenta</ThemedText>
         <ThemedText style={styles.subtitle}>Únete a Bienestar Digital</ThemedText>
@@ -53,22 +53,22 @@ export default function SignUpScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
           theme={{ roundness: 12 }}
-          right={email ? <TextInput.Icon icon="check-circle" color={colors.primary} /> : undefined}
+          right={email ? <TextInput.Icon icon="check-circle" color={theme.colors.primary} /> : undefined}
         />
         <TextInput
           label="Contraseña"
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
           theme={{ roundness: 12 }}
           right={<TextInput.Icon icon={showPassword ? 'eye-off' : 'eye'} onPress={() => setShowPassword((v) => !v)} />}
         />
@@ -77,10 +77,10 @@ export default function SignUpScreen() {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry={!showConfirm}
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
           theme={{ roundness: 12 }}
           right={<TextInput.Icon icon={showConfirm ? 'eye-off' : 'eye'} onPress={() => setShowConfirm((v) => !v)} />}
         />
@@ -91,7 +91,7 @@ export default function SignUpScreen() {
           onPress={onSubmit} 
           style={styles.button}
           contentStyle={{ height: 50 }}
-          buttonColor={colors.primary}
+          buttonColor={theme.colors.primary}
         >
           Continuar
         </Button>
@@ -99,7 +99,7 @@ export default function SignUpScreen() {
         <View style={styles.footer}>
           <ThemedText>¿Ya tienes cuenta? </ThemedText>
           <Link href="/auth/sign-in">
-            <ThemedText type="link" style={{ color: colors.primary, fontWeight: '600' }}>Inicia sesión</ThemedText>
+            <ThemedText type="link" style={{ color: theme.colors.primary, fontWeight: '600' }}>Inicia sesión</ThemedText>
           </Link>
         </View>
       </View>
@@ -108,7 +108,7 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, padding: spacing.lg },
   header: {
     marginTop: spacing.xl * 2,
     marginBottom: spacing.xl,
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E0EBFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -126,19 +125,16 @@ const styles = StyleSheet.create({
   brand: { 
     fontSize: 28, 
     fontWeight: '700', 
-    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   subtitle: { 
     fontSize: 16, 
-    color: colors.textSecondary 
   },
   formContainer: {
     flex: 1,
   },
   input: { 
     marginBottom: spacing.md, 
-    backgroundColor: colors.background,
   },
   button: { 
     marginTop: spacing.md, 

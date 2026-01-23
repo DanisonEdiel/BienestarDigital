@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useTheme } from 'react-native-paper';
 
 type CircularProgressProps = {
   size?: number;
@@ -15,10 +16,14 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   size = 80,
   strokeWidth = 8,
   percent,
-  trackColor = '#E6EAF2',
-  progressColor = '#5B8DEF',
+  trackColor,
+  progressColor,
   children,
 }) => {
+  const theme = useTheme();
+  const finalTrackColor = trackColor || theme.colors.surfaceVariant;
+  const finalProgressColor = progressColor || theme.colors.primary;
+
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -30,9 +35,9 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
     Animated.timing(animated, {
       toValue: targetOffset,
       duration: 800,
-      useNativeDriver: false,
+      useNativeDriver: false, // SVG props are not supported by native driver
     }).start();
-  }, [percent]);
+  }, [percent, circumference]);
 
   const sizeStyle = { width: size, height: size };
 
@@ -41,7 +46,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
       <Svg width={size} height={size}>
         {/* Track */}
         <Circle
-          stroke={trackColor}
+          stroke={finalTrackColor}
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -50,7 +55,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
         />
         {/* Progress */}
         <AnimatedCircle
-          stroke={progressColor}
+          stroke={finalProgressColor}
           fill="none"
           cx={size / 2}
           cy={size / 2}

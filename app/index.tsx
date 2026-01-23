@@ -1,13 +1,12 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { colors } from '@/constants/theme/colors';
 import { useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, useTheme } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
 
@@ -47,6 +46,7 @@ export default function Onboarding() {
   const { isSignedIn } = useAuth();
   const [index, setIndex] = useState(0);
   const listRef = useRef<FlatList<Step>>(null);
+  const theme = useTheme();
 
   if (isSignedIn) {
     return <Redirect href={'/(tabs)'} />;
@@ -80,17 +80,24 @@ export default function Onboarding() {
           <View style={[styles.page, { width }]}>
             <View style={styles.iconWrap}>
                <LinearGradient
-                  colors={['#E0EBFF', '#F5F9FF']}
+                  colors={[theme.colors.surfaceVariant, theme.colors.surface]}
                   style={styles.iconBackground}
                 >
-                  <Ionicons name={item.icon} size={80} color={colors.primary} />
+                  <Ionicons name={item.icon} size={80} color={theme.colors.primary} />
                 </LinearGradient>
             </View>
             <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
             <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
             <View style={styles.dots}>
               {STEPS.map((_, i) => (
-                <View key={i} style={[styles.dot, i === index ? styles.dotActive : undefined]} />
+                <View 
+                  key={i} 
+                  style={[
+                    styles.dot, 
+                    { backgroundColor: i === index ? theme.colors.primary : theme.colors.surfaceVariant },
+                    i === index ? styles.dotActive : undefined
+                  ]} 
+                />
               ))}
             </View>
             <Button 
@@ -99,8 +106,7 @@ export default function Onboarding() {
               style={styles.button}
               contentStyle={{ height: 50 }}
               labelStyle={{ fontSize: 16, fontWeight: '600' }}
-
-              buttonColor={colors.primary}
+              buttonColor={theme.colors.primary}
             >
               {item.cta}
             </Button>
@@ -112,7 +118,7 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1 },
   page: {
     flex: 1,
     alignItems: 'center',
@@ -133,12 +139,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     textAlign: 'center',
     marginBottom: 16,
-    color: colors.textPrimary,
   },
   subtitle: {
     textAlign: 'center',
     fontSize: 16,
-    color: colors.textSecondary,
     marginBottom: 48,
     lineHeight: 24,
   },
@@ -151,10 +155,8 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E5E5EA',
   },
   dotActive: {
-    backgroundColor: colors.primary,
     width: 24,
   },
   button: {

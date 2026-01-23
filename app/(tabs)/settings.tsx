@@ -3,15 +3,15 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform }
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useClerk, useUser, useAuth } from '@clerk/clerk-expo';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { api } from '@/lib/api';
-import { Snackbar, SegmentedButtons } from 'react-native-paper';
+import { Snackbar, SegmentedButtons, useTheme } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function SettingsScreen() {
+  const theme = useTheme();
   const [limitTime, setLimitTime] = useState(() => {
     const d = new Date();
     d.setHours(3);
@@ -116,32 +116,32 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Ajustes</Text>
+          <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>Ajustes</Text>
           <View style={{ width: 40 }} />
         </View>
 
         {/* Límites */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Límites diarios de pantalla</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Límites diarios de pantalla</Text>
           
-          <Text style={styles.label}>Tiempo límite total</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tiempo límite total</Text>
           
           <TouchableOpacity 
-            style={styles.timeSelector} 
+            style={[styles.timeSelector, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outlineVariant }]} 
             onPress={() => setShowTimePicker(true)}
           >
-            <Text style={styles.timeSelectorText}>
+            <Text style={[styles.timeSelectorText, { color: theme.colors.onSurface }]}>
               {limitTime.getHours()}h {limitTime.getMinutes().toString().padStart(2, '0')}m
             </Text>
-            <Ionicons name="time-outline" size={24} color={colors.primary} />
+            <Ionicons name="time-outline" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
 
           {showTimePicker && (
@@ -152,12 +152,13 @@ export default function SettingsScreen() {
               is24Hour={true}
               display="spinner"
               onChange={onTimeChange}
+              textColor={theme.colors.onSurface}
             />
           )}
 
           <View style={{ height: spacing.lg }} />
 
-          <Text style={styles.label}>Nivel de restricción</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Nivel de restricción</Text>
           <SegmentedButtons
             value={strictness}
             onValueChange={setStrictness}
@@ -165,16 +166,18 @@ export default function SettingsScreen() {
               {
                 value: 'Estricto',
                 label: 'Estricto',
-                style: strictness === 'Estricto' ? { backgroundColor: '#E8EAF6' } : {},
+                style: strictness === 'Estricto' ? { backgroundColor: theme.colors.secondaryContainer } : {},
+                labelStyle: { color: strictness === 'Estricto' ? theme.colors.onSecondaryContainer : theme.colors.onSurface },
               },
               {
                 value: 'Flexible',
                 label: 'Flexible',
-                style: strictness === 'Flexible' ? { backgroundColor: '#E8EAF6' } : {},
+                style: strictness === 'Flexible' ? { backgroundColor: theme.colors.secondaryContainer } : {},
+                labelStyle: { color: strictness === 'Flexible' ? theme.colors.onSecondaryContainer : theme.colors.onSurface },
               },
             ]}
             style={styles.segmentedButton}
-            theme={{ colors: { secondaryContainer: colors.primary + '20', onSecondaryContainer: colors.primary } }}
+            theme={{ colors: { secondaryContainer: theme.colors.secondaryContainer, onSecondaryContainer: theme.colors.onSecondaryContainer } }}
           />
         </View>
 
@@ -186,8 +189,8 @@ export default function SettingsScreen() {
         />
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
-          <Text style={styles.signOutText}>Cerrar sesión</Text>
+          <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
+          <Text style={[styles.signOutText, { color: theme.colors.error }]}>Cerrar sesión</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -195,14 +198,14 @@ export default function SettingsScreen() {
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
-        style={{ backgroundColor: colors.primary, marginBottom: 20 }}
+        style={{ backgroundColor: theme.colors.primary, marginBottom: 20 }}
         action={{
           label: 'OK',
           onPress: () => setSnackbarVisible(false),
-          textColor: '#FFFFFF',
+          textColor: theme.colors.onPrimary,
         }}
       >
-        Cambios guardados correctamente
+        <Text style={{ color: theme.colors.onPrimary }}>Cambios guardados correctamente</Text>
       </Snackbar>
     </View>
   );
@@ -211,7 +214,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   contentContainer: {
     padding: spacing.lg,
@@ -230,7 +232,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   section: {
     marginBottom: spacing.xl,
@@ -238,29 +239,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: spacing.md,
   },
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   timeSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
     padding: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   timeSelectorText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   segmentedButton: {
     marginTop: spacing.sm,
@@ -278,7 +274,6 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     marginLeft: spacing.sm,
-    color: '#FF3B30',
     fontSize: 16,
     fontWeight: '500',
   },

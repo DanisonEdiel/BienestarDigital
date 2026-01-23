@@ -1,17 +1,28 @@
 import { Colors, Palette } from '@/constants/theme';
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  useFonts,
+} from '@expo-google-fonts/poppins';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
-import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
-import 'react-native-reanimated';
 import { useEffect } from 'react';
+import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider, configureFonts } from 'react-native-paper';
+import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as Notifications from 'expo-notifications';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
 // Configure notifications to show even when app is in foreground
 Notifications.setNotificationHandler({
@@ -28,6 +39,18 @@ export const unstable_settings = {};
 export default function RootLayout() {
   WebBrowser.maybeCompleteAuthSession();
   const colorScheme = useColorScheme();
+  const [loaded, error] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
 
   useEffect(() => {
     (async () => {
@@ -40,6 +63,10 @@ export default function RootLayout() {
     })();
   }, []);
 
+  if (!loaded && !error) {
+    return null;
+  }
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -50,8 +77,14 @@ export default function RootLayout() {
   });
 
   const base = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
+  
+  const fontConfig = {
+    fontFamily: 'Poppins_400Regular',
+  };
+
   const paperTheme = {
     ...base,
+    fonts: configureFonts({ config: fontConfig }),
     colors: {
       ...base.colors,
       primary: Palette.primary,

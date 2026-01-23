@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
+import { useTheme } from 'react-native-paper';
 
 type StatItem = {
   label: string;
@@ -15,16 +15,18 @@ type StatSummaryRowProps = {
 };
 
 export const StatSummaryRow = ({ stats }: StatSummaryRowProps) => {
+  const theme = useTheme();
+
   return (
     <View style={styles.container}>
       {stats.map((stat, index) => (
         <View key={index} style={styles.item}>
-          <Text style={styles.label}>{stat.label}</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>{stat.label}</Text>
           <View style={styles.valueRow}>
-            <Text style={[styles.value, { color: stat.color || colors.primary }]}>
+            <Text style={[styles.value, { color: stat.color || theme.colors.primary }]}>
               {stat.value}
             </Text>
-            {stat.unit && <Text style={styles.unit}>{stat.unit}</Text>}
+            {stat.unit && <Text style={[styles.unit, { color: theme.colors.onSurfaceVariant }]}>{stat.unit}</Text>}
           </View>
         </View>
       ))}
@@ -43,7 +45,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginBottom: 4,
   },
   valueRow: {
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
   },
   unit: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginLeft: 2,
   },
 });

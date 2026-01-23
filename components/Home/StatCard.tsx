@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
+import { useTheme } from 'react-native-paper';
 
 type StatCardProps = {
   title: string;
@@ -13,30 +13,31 @@ type StatCardProps = {
 };
 
 export const StatCard = ({ title, subtitle, value, status, children, style }: StatCardProps) => {
+  const theme = useTheme();
+
   return (
-    <View style={[styles.card, style]}>
+    <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }, style]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>
+          {subtitle && <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>{subtitle}</Text>}
         </View>
         {/* Icon placeholder */}
-        <View style={styles.iconDot} />
+        <View style={[styles.iconDot, { backgroundColor: theme.colors.primary }]} />
       </View>
       
       <View style={styles.content}>
         {children}
       </View>
 
-      {status && <Text style={styles.statusText}>{status}</Text>}
-      {value && <Text style={styles.valueText}>{value}</Text>}
+      {status && <Text style={[styles.statusText, { color: theme.colors.onSurface }]}>{status}</Text>}
+      {value && <Text style={[styles.valueText, { color: theme.colors.onSurface }]}>{value}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
     borderRadius: 24,
     padding: spacing.md,
     flex: 1, // Para que ocupe espacio equitativo en row
@@ -49,7 +50,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F5F5F5',
   },
   header: {
     flexDirection: 'row',
@@ -60,18 +60,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   subtitle: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   iconDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.primary,
   },
   content: {
     flex: 1,
@@ -82,10 +79,8 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   valueText: {
     fontSize: 14,
-    color: colors.textPrimary,
   }
 });

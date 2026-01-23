@@ -2,13 +2,13 @@ import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { UsageChart } from '@/components/Analytics/UsageChart';
 import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
 import { AppUsageList } from '@/components/Analytics/AppUsageList';
 import { useInteractionHistory } from '@/hooks/useMetrics';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
+import { useTheme } from 'react-native-paper';
 
 // Dummy Data (Fallback)
 const CHART_DATA_FALLBACK = [
@@ -22,11 +22,12 @@ const CHART_DATA_FALLBACK = [
 ];
 
 const APPS_DATA_FALLBACK = [
-  { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%', color: '#000000' },
-  { name: 'Clash Royale', time: '1.0 h', category: 'Medio', percentage: '40%', color: '#5B8DEF' },
+  { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%' },
+  { name: 'Clash Royale', time: '1.0 h', category: 'Medio', percentage: '40%' },
 ];
 
 export default function AnalyticsScreen() {
+  const theme = useTheme();
   // ... existing code ...
   const { data: interactionHistory, isLoading, isFetching, refetch: refetchHistory } = useInteractionHistory('week');
   const { metrics: todayMetrics, appUsage: todayAppUsage, refresh: refreshWellbeing } = useDigitalWellbeing();
@@ -195,10 +196,10 @@ export default function AnalyticsScreen() {
         category,
         percentage,
         iconName,
-        color: colors.primary,
+        color: theme.colors.primary,
       };
     });
-  }, [todayAppUsage]);
+  }, [todayAppUsage, theme.colors.primary]);
 
   const interactionStats = useMemo(() => {
     const taps = todayMetrics?.tapsCount ?? 0;
@@ -214,53 +215,53 @@ export default function AnalyticsScreen() {
       totalUsageMinutes > 0 ? (scrolls / totalUsageMinutes).toFixed(1) : '0.0';
 
     return [
-      { label: 'Taps hoy', value: taps, color: colors.primary },
-      { label: 'Scrolls hoy', value: scrolls, color: colors.primary },
-      { label: 'Taps/min', value: tapsPerMinute, unit: '', color: colors.primary },
-      { label: 'Scrolls/min', value: scrollsPerMinute, unit: '', color: colors.primary },
+      { label: 'Taps hoy', value: taps, color: theme.colors.primary },
+      { label: 'Scrolls hoy', value: scrolls, color: theme.colors.primary },
+      { label: 'Taps/min', value: tapsPerMinute, unit: '', color: theme.colors.primary },
+      { label: 'Scrolls/min', value: scrollsPerMinute, unit: '', color: theme.colors.primary },
     ];
-  }, [todayMetrics, todayAppUsage]);
+  }, [todayMetrics, todayAppUsage, theme.colors.primary]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={colors.primary} />}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
       {/* Header Customization for Drawer/Stack */}
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Custom Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-           <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+           <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Intensidad de uso</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>Intensidad de uso</Text>
         <TouchableOpacity style={styles.iconBtn}>
-           <Ionicons name="share-social-outline" size={24} color={colors.textPrimary} />
+           <Ionicons name="share-social-outline" size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity>
-          <Text style={[styles.tabText, styles.tabTextActive]}>Semana</Text>
+          <Text style={[styles.tabText, styles.tabTextActive, { color: theme.colors.primary }]}>Semana</Text>
         </TouchableOpacity>
       </View>
 
       {/* Chart */}
       {isLoading ? (
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
       ) : (
           <UsageChart data={chartData} />
       )}
 
       {/* Stats Row: Interacciones reales de hoy */}
       {(isLoading || isFetching || refreshing) ? (
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
         <StatSummaryRow stats={interactionStats} />
       )}
 
       {/* App List */}
       {(isLoading || isFetching || refreshing) ? (
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
         <AppUsageList apps={appsData} />
       )}
@@ -272,7 +273,6 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   contentContainer: {
     padding: spacing.lg,
@@ -290,12 +290,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   subHeaderTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -307,10 +305,8 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    color: colors.textSecondary,
   },
   tabTextActive: {
-    color: colors.primary,
     fontWeight: '600',
   },
 });

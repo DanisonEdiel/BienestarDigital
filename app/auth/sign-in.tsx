@@ -1,6 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useOAuth, useSignIn } from '@clerk/clerk-expo';
@@ -9,10 +8,11 @@ import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Checkbox, HelperText, TextInput } from 'react-native-paper';
+import { Button, Checkbox, HelperText, TextInput, useTheme } from 'react-native-paper';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { signIn, setActive, isLoaded } = useSignIn();
   const colorScheme = useColorScheme();
   const [email, setEmail] = useState('');
@@ -41,8 +41,8 @@ export default function SignInScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="leaf" size={40} color={colors.primary} />
+        <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
+          <Ionicons name="leaf" size={40} color={theme.colors.primary} />
         </View>
         <ThemedText type="title" style={styles.brand}>Bienestar Digital</ThemedText>
         <ThemedText style={styles.subtitle}>Tu bienestar es primero</ThemedText>
@@ -55,11 +55,11 @@ export default function SignInScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
-          right={email ? <TextInput.Icon icon="check-circle" color={colors.primary} /> : undefined}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
+          right={email ? <TextInput.Icon icon="check-circle" color={theme.colors.primary} /> : undefined}
           theme={{ roundness: 12 }}
         />
         <TextInput
@@ -67,10 +67,10 @@ export default function SignInScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
           theme={{ roundness: 12 }}
           right={<TextInput.Icon icon={showPassword ? 'eye-off' : 'eye'} onPress={() => setShowPassword((v) => !v)} />}
         />
@@ -81,12 +81,12 @@ export default function SignInScreen() {
             <Checkbox.Android 
               status={remember ? 'checked' : 'unchecked'} 
               onPress={() => setRemember((v) => !v)} 
-              color={colors.primary}
+              color={theme.colors.primary}
             />
             <ThemedText style={styles.remember}>Recordarme</ThemedText>
           </View>
           <Link href="/auth/verify-email" style={styles.forgot}>
-            <ThemedText type="link" style={{ color: colors.primary }}>¿Olvidaste la contraseña?</ThemedText>
+            <ThemedText type="link" style={{ color: theme.colors.primary }}>¿Olvidaste la contraseña?</ThemedText>
           </Link>
         </View>
 
@@ -95,7 +95,7 @@ export default function SignInScreen() {
           onPress={onSubmit} 
           style={styles.button}
           contentStyle={{ height: 50 }}
-          buttonColor={colors.primary}
+          buttonColor={theme.colors.primary}
         >
           Iniciar sesión
         </Button>
@@ -105,7 +105,7 @@ export default function SignInScreen() {
           
           <Button 
             mode="outlined" 
-            icon={() => <Ionicons name="logo-google" size={20} color={colors.textPrimary} />} 
+            icon={() => <Ionicons name="logo-google" size={20} color={theme.colors.onSurface} />} 
             onPress={async () => {
               try {
                 setError(null);
@@ -137,8 +137,8 @@ export default function SignInScreen() {
                 setError(e?.errors?.[0]?.message ?? 'No se pudo iniciar con Google');
               }
             }}
-            style={styles.socialBtn}
-            textColor={colors.textPrimary}
+            style={[styles.socialBtn, { borderColor: theme.colors.outlineVariant }]}
+            textColor={theme.colors.onSurface}
           >
             Google
           </Button>
@@ -146,7 +146,7 @@ export default function SignInScreen() {
           <View style={styles.createAccount}>
             <ThemedText>¿No tienes cuenta? </ThemedText>
             <Link href="/auth/sign-up">
-              <ThemedText type="link" style={{ color: colors.primary, fontWeight: '600' }}>Crear cuenta</ThemedText>
+              <ThemedText type="link" style={{ color: theme.colors.primary, fontWeight: '600' }}>Crear cuenta</ThemedText>
             </Link>
           </View>
         </View>
@@ -156,7 +156,7 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, padding: spacing.lg },
   header: {
     marginTop: spacing.xl * 2,
     marginBottom: spacing.xl,
@@ -166,7 +166,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E0EBFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -174,19 +173,16 @@ const styles = StyleSheet.create({
   brand: { 
     fontSize: 28, 
     fontWeight: '700', 
-    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   subtitle: { 
     fontSize: 16, 
-    color: colors.textSecondary 
   },
   formContainer: {
     flex: 1,
   },
   input: { 
     marginBottom: spacing.md, 
-    backgroundColor: colors.background,
   },
   button: { 
     marginTop: spacing.md, 
@@ -204,7 +200,6 @@ const styles = StyleSheet.create({
   },
   remember: { 
     fontSize: 14,
-    color: colors.textSecondary 
   },
   forgot: { 
     // alignSelf: 'flex-end' 
@@ -214,13 +209,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signInWith: { 
-    color: colors.textSecondary,
     marginBottom: spacing.md,
   },
   socialBtn: { 
     width: '100%', 
     borderRadius: 12, 
-    borderColor: '#E5E5EA',
     height: 50,
     justifyContent: 'center',
   },

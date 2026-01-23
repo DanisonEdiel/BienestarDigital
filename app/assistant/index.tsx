@@ -12,9 +12,9 @@ import {
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser, useAuth } from '@clerk/clerk-expo';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { api } from '@/lib/api';
+import { useTheme } from 'react-native-paper';
 
 type ChatRole = 'user' | 'assistant';
 
@@ -25,6 +25,7 @@ type ChatMessage = {
 };
 
 export default function AssistantScreen() {
+  const theme = useTheme();
   const { user } = useUser();
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -109,17 +110,17 @@ export default function AssistantScreen() {
         }}
       />
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={80}
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
           </TouchableOpacity>
           <View>
-            <Text style={styles.title}>Asistente de bienestar</Text>
-            <Text style={styles.subtitle}>Cuenta cómo te sientes hoy</Text>
+            <Text style={[styles.title, { color: theme.colors.onSurface }]}>Asistente de bienestar</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>Cuenta cómo te sientes hoy</Text>
           </View>
           <View style={{ width: 32 }} />
         </View>
@@ -132,13 +133,17 @@ export default function AssistantScreen() {
             <View
               style={[
                 styles.messageBubble,
-                item.role === 'user' ? styles.messageUser : styles.messageAssistant,
+                item.role === 'user' 
+                  ? [styles.messageUser, { backgroundColor: theme.colors.primary }] 
+                  : [styles.messageAssistant, { backgroundColor: theme.colors.surfaceVariant }],
               ]}
             >
               <Text
                 style={[
                   styles.messageText,
-                  item.role === 'user' ? styles.messageTextUser : styles.messageTextAssistant,
+                  item.role === 'user' 
+                    ? [styles.messageTextUser, { color: theme.colors.onPrimary }] 
+                    : [styles.messageTextAssistant, { color: theme.colors.onSurfaceVariant }],
                 ]}
               >
                 {item.content}
@@ -147,21 +152,21 @@ export default function AssistantScreen() {
           )}
         />
 
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outlineVariant }]}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.colors.surfaceVariant, color: theme.colors.onSurface }]}
             placeholder="Escribe cómo te sientes..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={theme.colors.onSurfaceVariant}
             value={input}
             onChangeText={setInput}
             multiline
           />
           <TouchableOpacity
-            style={[styles.sendButton, sending && styles.sendButtonDisabled]}
+            style={[styles.sendButton, { backgroundColor: theme.colors.primary }, sending && styles.sendButtonDisabled]}
             onPress={handleSend}
             disabled={sending}
           >
-            <Ionicons name="send" size={18} color="#FFFFFF" />
+            <Ionicons name="send" size={18} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -172,7 +177,6 @@ export default function AssistantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
@@ -188,11 +192,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   subtitle: {
     fontSize: 13,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   messagesContainer: {
@@ -208,21 +210,17 @@ const styles = StyleSheet.create({
   },
   messageUser: {
     alignSelf: 'flex-end',
-    backgroundColor: colors.primary,
   },
   messageAssistant: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E9ECEF',
   },
   messageText: {
     fontSize: 14,
     lineHeight: 20,
   },
   messageTextUser: {
-    color: '#FFFFFF',
   },
   messageTextAssistant: {
-    color: colors.textPrimary,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -230,8 +228,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    backgroundColor: '#FFFFFF',
   },
   input: {
     flex: 1,
@@ -240,8 +236,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: 20,
-    backgroundColor: '#F1F3F5',
-    color: colors.textPrimary,
     fontSize: 14,
   },
   sendButton: {
@@ -249,7 +243,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

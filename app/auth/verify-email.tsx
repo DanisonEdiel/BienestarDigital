@@ -1,6 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { colors } from '@/constants/theme/colors';
 import { spacing } from '@/constants/theme/spacing';
 import { useBootstrapMutation } from '@/hooks/auth/useBootstrapMutation';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -10,10 +9,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, HelperText, TextInput } from 'react-native-paper';
+import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { signUp, setActive, isLoaded } = useSignUp();
   const colorScheme = useColorScheme();
   const [code, setCode] = useState('');
@@ -59,8 +59,8 @@ export default function VerifyEmailScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="mail-unread-outline" size={40} color={colors.primary} />
+        <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
+          <Ionicons name="mail-unread-outline" size={40} color={theme.colors.primary} />
         </View>
         <ThemedText type="title" style={styles.brand}>Verifica tu email</ThemedText>
         <ThemedText style={styles.subtitle}>Ingresa el código enviado a tu correo</ThemedText>
@@ -72,10 +72,10 @@ export default function VerifyEmailScreen() {
           value={code} 
           onChangeText={setCode} 
           keyboardType="number-pad" 
-          style={styles.input} 
+          style={[styles.input, { backgroundColor: theme.colors.surface }]} 
           mode="outlined"
-          outlineColor={colors.grayLight}
-          activeOutlineColor={colors.primary}
+          outlineColor={theme.colors.outlineVariant}
+          activeOutlineColor={theme.colors.primary}
           theme={{ roundness: 12 }} 
         />
         {error && <HelperText type="error" visible>{error}</HelperText>}
@@ -85,7 +85,7 @@ export default function VerifyEmailScreen() {
           onPress={onSubmit} 
           style={styles.button}
           contentStyle={{ height: 50 }}
-          buttonColor={colors.primary}
+          buttonColor={theme.colors.primary}
         >
           Verificar Cuenta
         </Button>
@@ -102,7 +102,7 @@ export default function VerifyEmailScreen() {
             }
           }} 
           style={styles.resendButton}
-          textColor={colors.primary}
+          textColor={theme.colors.primary}
         >
           Reenviar código
         </Button>
@@ -112,7 +112,7 @@ export default function VerifyEmailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, padding: spacing.lg },
   header: {
     marginTop: spacing.xl * 2,
     marginBottom: spacing.xl,
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E0EBFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -130,12 +129,10 @@ const styles = StyleSheet.create({
   brand: { 
     fontSize: 24, 
     fontWeight: '700', 
-    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   subtitle: { 
     fontSize: 16, 
-    color: colors.textSecondary,
     textAlign: 'center',
   },
   formContainer: {
@@ -143,7 +140,6 @@ const styles = StyleSheet.create({
   },
   input: { 
     marginBottom: spacing.md, 
-    backgroundColor: colors.background,
   },
   button: { 
     marginTop: spacing.md, 
