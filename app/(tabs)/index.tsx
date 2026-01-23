@@ -160,7 +160,7 @@ export default function HomeScreen() {
       {/* Programas */}
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Programas</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/programs')}>
           <Text style={[styles.linkText, { color: theme.colors.primary }]}>Ver más</Text>
         </TouchableOpacity>
       </View>
