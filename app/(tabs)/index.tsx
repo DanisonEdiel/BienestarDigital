@@ -7,6 +7,7 @@ import { spacing } from '@/constants/theme/spacing';
 import { typography } from '@/constants/theme/typography';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
 import { useBlockingRisk, useEmotionSummary, useScreenTimeSummary } from '@/hooks/useMetrics';
+import { usePrograms } from '@/hooks/usePrograms';
 import { useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -25,7 +26,8 @@ export default function HomeScreen() {
   const { data: screenSummary, refetch: refetchScreen, isLoading: isScreenLoading, isFetching: isScreenFetching } = useScreenTimeSummary();
   const { data: emotionSummary, refetch: refetchEmotion, isLoading: isEmotionLoading, isFetching: isEmotionFetching } = useEmotionSummary();
   const { data: blockingRisk, isLoading: isRiskLoading, isFetching: isRiskFetching, refetch: refetchRisk } = useBlockingRisk();
- // Construye los próximos 5 días a partir de hoy, marcando hoy como activo
+  const { data: programs, isLoading: isProgramsLoading, refetch: refetchPrograms } = usePrograms();
+  // Construye los próximos 5 días a partir de hoy, marcando hoy como activo
  const days = React.useMemo(() => {
    const today = new Date();
    const result: { label: string; number: string; active?: boolean }[] = [];
@@ -48,6 +50,7 @@ export default function HomeScreen() {
         refetchScreen(),
         refetchEmotion(),
         refetchRisk(),
+        refetchPrograms(),
         Promise.resolve(refreshWellbeing()),
       ]);
     } finally {
@@ -165,8 +168,22 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
       
-      <ProgramCard title="Almuerzo con familia" time="13h00 - 14h00" />
-      <ProgramCard title="Lectura matutina" time="07h00 - 07h30" />
+      {isProgramsLoading ? (
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+      ) : programs && programs.length > 0 ? (
+        programs.slice(0, 5).map((program) => (
+          <ProgramCard
+            key={program.id}
+            title={program.title}
+            time={`${program.start_time} - ${program.end_time}`}
+            icon={program.icon}
+          />
+        ))
+      ) : (
+        <Text style={{ color: theme.colors.onSurfaceVariant, fontStyle: 'italic', textAlign: 'center', marginTop: 8 }}>
+          No hay programas activos.
+        </Text>
+      )}
 
     </ScrollView>
 

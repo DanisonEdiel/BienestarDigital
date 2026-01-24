@@ -7,15 +7,16 @@ import { useTheme } from 'react-native-paper';
 type ProgramCardProps = {
   title: string;
   time: string;
+  icon?: string;
 };
 
-export const ProgramCard = ({ title, time }: ProgramCardProps) => {
+export const ProgramCard = ({ title, time, icon }: ProgramCardProps) => {
   const theme = useTheme();
   
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
-         <Ionicons name="cafe" size={20} color={theme.colors.onSurface} />
+         <Ionicons name={icon as any || "cafe"} size={20} color={theme.colors.onSurface} />
       </View>
       <View style={styles.info}>
         <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>

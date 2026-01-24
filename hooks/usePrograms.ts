@@ -7,10 +7,9 @@ export type Program = {
   user_id: string;
   title: string;
   description?: string;
-  start_time: string; // "HH:mm"
-  end_time: string; // "HH:mm"
-  days_of_week: number[]; // 0-6
-  is_active: boolean;
+  start_time: string; 
+  end_time: string; 
+  days_of_week: number[];   is_active: boolean;
   icon?: string;
   created_at: string;
   updated_at: string;
