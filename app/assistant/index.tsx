@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import { spacing } from '@/constants/theme/spacing';
+import { useUser } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Stack, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useUser, useAuth } from '@clerk/clerk-expo';
-import { spacing } from '@/constants/theme/spacing';
-import { api } from '@/lib/api';
 import { useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type ChatRole = 'user' | 'assistant';
+type ChatRole = 'user' | 'assistant' | 'system';
 
 type ChatMessage = {
   id: string;
@@ -25,25 +25,59 @@ type ChatMessage = {
   content: string;
 };
 
+const STORAGE_KEY = 'chat_history';
+
 export default function AssistantScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { user } = useUser();
-  const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content:
-          'Hola, soy tu asistente de bienestar. ¿Cómo te sientes hoy? Cuéntame con tus propias palabras.',
-      },
-    ]);
+    loadMessages();
   }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveMessages(messages);
+      // Scroll to bottom when messages change
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
+  const loadMessages = async () => {
+    try {
+      const stored = await SecureStore.getItemAsync(STORAGE_KEY);
+      if (stored) {
+        setMessages(JSON.parse(stored));
+      } else {
+        setMessages([
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content:
+              'Hola, soy tu asistente de bienestar. ¿Cómo te sientes hoy? Cuéntame con tus propias palabras.',
+          },
+        ]);
+      }
+    } catch (e) {
+      console.error('Error loading chat history', e);
+    }
+  };
+
+  const saveMessages = async (msgs: ChatMessage[]) => {
+    try {
+      // Limit history to avoid SecureStore size limits (approx 20 last messages)
+      const recentMsgs = msgs.slice(-20);
+      await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(recentMsgs));
+    } catch (e) {
+      console.error('Error saving chat history', e);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || !user || sending) return;
@@ -60,43 +94,64 @@ export default function AssistantScreen() {
     setSending(true);
 
     try {
-      const token = await getToken();
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      // Use real OpenAI API
+      const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('OpenAI API Key not found');
+      }
 
-      const payloadMessages = nextMessages.map((m) => ({
-        role: m.role,
-        content: m.content,
+      const apiMessages = nextMessages.map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
       }));
 
-      const response = await api.post(
-        '/ai/mood-checkin',
-        { messages: payloadMessages },
-        {
-          params: { clerkId: user.id },
-          headers,
-        },
-      );
-
-      const data = response.data as {
-        assistantMessage: string;
-        emotion: string;
-        stressLevel: 'low' | 'medium' | 'high';
-        confidence: number;
+      // Add system prompt for context
+      const systemPrompt = {
+        role: 'system',
+        content: `Eres un asistente de bienestar digital empático y profesional. 
+        Tu objetivo es ayudar al usuario a reflexionar sobre su bienestar emocional y digital.
+        El usuario se llama ${user.firstName || 'Usuario'}.
+        Responde de manera concisa, amable y en español.
+        Si detectas estrés o ansiedad, ofrece consejos breves de respiración o desconexión.`
       };
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [systemPrompt, ...apiMessages],
+          temperature: 0.7,
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('OpenAI Error:', errorData);
+        throw new Error('Error en la respuesta de IA');
+      }
+
+      const data = await response.json();
+      const aiContent = data.choices[0]?.message?.content || 'No pude generar una respuesta.';
 
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: data.assistantMessage,
+        content: aiContent,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
+      console.error(error);
       const fallback: ChatMessage = {
         id: `assistant-error-${Date.now()}`,
         role: 'assistant',
         content:
-          'Hubo un problema al analizar tu mensaje. Aun así, gracias por compartir cómo te sientes. Puedes intentarlo de nuevo en un momento.',
+          'Lo siento, tuve un problema para conectar con mi cerebro digital. Por favor, intenta de nuevo.',
       };
       setMessages((prev) => [...prev, fallback]);
     } finally {
@@ -128,6 +183,7 @@ export default function AssistantScreen() {
         </View>
 
         <FlatList
+          ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messagesContainer}

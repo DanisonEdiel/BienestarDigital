@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { useUserStore } from '@/store/userStore';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL || process.env.VITE_API_URL || 'http://localhost:3000';
 // Strip '/api' if present for socket connection usually, or keep if namespaced.
