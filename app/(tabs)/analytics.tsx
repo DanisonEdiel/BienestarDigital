@@ -152,8 +152,7 @@ export default function AnalyticsScreen() {
 
     const getIconAndCategory = (packageName: string) => {
       const p = packageName.toLowerCase();
-      // Social Media
-      if (p.includes('tiktok')) {
+      if (p.includes('tiktok') || p.includes('musically') || p.includes('trill')) {
         return { iconUrl: 'https://img.icons8.com/color/96/tiktok--v1.png', category: 'Red social' };
       }
       if (p.includes('instagram')) {

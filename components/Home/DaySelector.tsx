@@ -1,5 +1,6 @@
 import { spacing } from '@/constants/theme/spacing';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlockingRisk } from '@/hooks/useMetrics';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View, Animated } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -9,14 +10,15 @@ type Day = {
   number: string;
   active?: boolean;
 };
- 
+
 type DaySelectorProps = {
   days: Day[];
   progressPercent?: number; // 0-100 dinámico
   barColor?: string;
+  riskDetails?: BlockingRisk | null;
 };
- 
-export const DaySelector = ({ days, progressPercent = 75, barColor }: DaySelectorProps) => {
+
+export const DaySelector = ({ days, progressPercent = 75, barColor, riskDetails }: DaySelectorProps) => {
   const theme = useTheme();
   const animated = React.useRef(new Animated.Value(progressPercent)).current;
   const activeColor = barColor || theme.colors.primary;
@@ -34,43 +36,73 @@ export const DaySelector = ({ days, progressPercent = 75, barColor }: DaySelecto
     outputRange: ['0%', '100%'],
   });
 
+  // Generar insight dinámico basado en los datos
+  const getInsight = () => {
+    if (!riskDetails) return "Analizando patrones de uso...";
+
+    const { usedPercent, totalInteractions, emotionLevel, percent } = riskDetails;
+
+    // Prioridad a niveles críticos
+    if (percent >= 75) {
+        if (emotionLevel === 'high') return "Tu nivel de estrés y uso elevado aumentan drásticamente el riesgo.";
+        if (totalInteractions > 1200) return "Demasiadas interacciones (taps/scrolls) están disparando el riesgo.";
+        if (usedPercent > 90) return "Has agotado casi todo tu tiempo de pantalla seguro.";
+        return "Riesgo crítico de bloqueo. ¡Desconecta ya!";
+    }
+
+    if (percent >= 40) {
+        if (emotionLevel === 'high') return "El estrés está influyendo en tu patrón de uso.";
+        if (totalInteractions > 800) return "Estás revisando el celular con mucha frecuencia.";
+        if (usedPercent > 60) return "Tu tiempo de uso está empezando a ser preocupante.";
+        return "Tu uso es moderado, pero mantente alerta.";
+    }
+
+    return "¡Excelente! Tu patrón de uso es saludable y equilibrado.";
+  };
+
+  const insight = getInsight();
+
   return (
      <View style={[styles.container, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }]}>
-       {/* <View style={styles.daysRow}>
-         {days.map((day, index) => {
-           if (day.active) {
-             return (
-               <LinearGradient
-                 key={`${day.label}-${index}`}
-                 colors={[theme.colors.primary, theme.colors.primaryContainer]} 
-                 style={[styles.dayItem, styles.dayItemActive]}
-                 start={{ x: 0, y: 0 }}
-                 end={{ x: 1, y: 1 }}
-               >
-                 <Text style={[styles.dayText, styles.dayTextActive, { color: theme.colors.onPrimary }]}>{day.label}</Text>
-                 <Text style={[styles.dayNumber, styles.dayTextActive, { color: theme.colors.onPrimary }]}>{day.number}</Text>
-               </LinearGradient>
-             );
-           }
-           return (
-             <View key={`${day.label}-${index}`} style={[styles.dayItem, { backgroundColor: theme.colors.surface }]}>
-               <Text style={[styles.dayText, { color: theme.colors.onSurfaceVariant }]}>{day.label}</Text>
-               <Text style={[styles.dayNumber, { color: theme.colors.onSurface }]}>{day.number}</Text>
-             </View>
-           );
-         })}
-       </View> */}
+       {/* Header con Título e Insight */}
+       <View style={styles.headerRow}>
+         <View style={{ flex: 1, paddingRight: spacing.sm }}>
+             <Text style={[styles.title, { color: theme.colors.onSurface }]}>Riesgo de Bloqueo</Text>
+             <Text style={[styles.insight, { color: theme.colors.onSurfaceVariant }]}>{insight}</Text>
+         </View>
+         <Text style={[styles.percentage, { color: activeColor }]}>{Math.round(progressPercent)}%</Text>
+       </View>
        
        {/* Barra de progreso dinámica */}
        <View style={styles.progressContainer}>
           <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.surfaceVariant }]}>
             <Animated.View style={[styles.progressBarFill, { width: widthInterpolate, backgroundColor: activeColor }]} />
           </View>
-          <View style={styles.progressTextRow}>
-             <Text style={[styles.progressLabel, { color: theme.colors.onSurfaceVariant }]}>Riesgo de bloqueo</Text>
-             <Text style={[styles.progressValue, { color: theme.colors.onSurface }]}>{Math.round(progressPercent)}%</Text>
-          </View>
        </View>
+
+       {/* Detalles (si existen) */}
+       {riskDetails && (
+         <View style={[styles.detailsRow, { borderTopColor: theme.colors.outlineVariant }]}>
+             <View style={styles.detailItem}>
+                 <Ionicons name="time-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                 <Text style={[styles.detailText, { color: theme.colors.onSurfaceVariant }]}>
+                     {riskDetails.usedPercent}% Uso
+                 </Text>
+             </View>
+             <View style={styles.detailItem}>
+                 <Ionicons name="finger-print-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                 <Text style={[styles.detailText, { color: theme.colors.onSurfaceVariant }]}>
+                     {riskDetails.totalInteractions} Inter.
+                 </Text>
+             </View>
+             <View style={styles.detailItem}>
+                 <Ionicons name="pulse-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                 <Text style={[styles.detailText, { color: theme.colors.onSurfaceVariant }]}>
+                     {riskDetails.emotionLevel === 'high' ? 'Alto' : riskDetails.emotionLevel === 'medium' ? 'Medio' : 'Bajo'}
+                 </Text>
+             </View>
+         </View>
+       )}
      </View>
    );
  };
@@ -79,7 +111,6 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.md,
     borderRadius: 24,
-    // Sombra suave estilo iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -88,53 +119,52 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderWidth: 1,
   },
-  daysRow: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
   },
-  dayItem: {
-    width: 48,
-    height: 68,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayItemActive: {
-    // Background color handled by LinearGradient
-  },
-  dayText: {
-    fontSize: 12,
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
     marginBottom: 4,
   },
-  dayNumber: {
-    fontSize: 16,
-    fontWeight: '600',
+  insight: {
+    fontSize: 14,
+    lineHeight: 20,
   },
-  dayTextActive: {
-    // Colors handled inline
+  percentage: {
+    fontSize: 24,
+    fontWeight: '800',
   },
   progressContainer: {
-    marginTop: spacing.sm,
+    marginBottom: spacing.md,
   },
   progressBarBackground: {
-    height: 6,
-    borderRadius: 3,
-    marginBottom: spacing.xs,
+    height: 8,
+    borderRadius: 4,
+    width: '100%',
+    overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
-  progressTextRow: {
+  detailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    marginTop: spacing.xs,
   },
-  progressLabel: {
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  detailText: {
     fontSize: 12,
-  },
-  progressValue: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
+    fontWeight: '500',
+  }
 });

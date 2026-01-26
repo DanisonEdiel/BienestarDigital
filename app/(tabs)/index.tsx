@@ -260,8 +260,13 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Selector de días */}
-        <DaySelector days={days} progressPercent={blockingRisk?.percent ?? 0} barColor={riskColor} />
+        {/* Selector de días / Riesgo de bloqueo */}
+        <DaySelector 
+          days={days} 
+          progressPercent={blockingRisk?.percent ?? 0} 
+          barColor={riskColor} 
+          riskDetails={blockingRisk}
+        />
         {isRiskLoading || isRiskFetching ? (
           <ActivityIndicator
             size="small"

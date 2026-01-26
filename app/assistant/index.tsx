@@ -168,8 +168,8 @@ export default function AssistantScreen() {
       />
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
