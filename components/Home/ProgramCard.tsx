@@ -1,20 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
 import { spacing } from '@/constants/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 type ProgramCardProps = {
+  id: string;
   title: string;
   time: string;
   icon?: string;
 };
 
-export const ProgramCard = ({ title, time, icon }: ProgramCardProps) => {
+export const ProgramCard = ({ id, title, time, icon }: ProgramCardProps) => {
   const theme = useTheme();
+  const router = useRouter();
   
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+    <TouchableOpacity 
+      activeOpacity={0.7}
+      onPress={() => router.push({ pathname: '/programs/form', params: { id } })}
+      style={[styles.container, { backgroundColor: theme.colors.surface }]}
+    >
       <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
          <Ionicons name={icon as any || "cafe"} size={20} color={theme.colors.onSurface} />
       </View>
@@ -22,11 +29,8 @@ export const ProgramCard = ({ title, time, icon }: ProgramCardProps) => {
         <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>
         <Text style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>{time}</Text>
       </View>
-      <View style={styles.avatarContainer}>
-         {/* Placeholder para avatar */}
-         <View style={[styles.avatar, { backgroundColor: theme.colors.surfaceDisabled }]} />
-      </View>
-    </View>
+
+    </TouchableOpacity>
   );
 };
 

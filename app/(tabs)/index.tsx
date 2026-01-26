@@ -65,7 +65,7 @@ export default function HomeScreen() {
     data: programs,
     isLoading: isProgramsLoading,
     refetch: refetchPrograms,
-  } = usePrograms();
+  } = usePrograms(true);
 
   // Helper para semaforización de estrés
   const getStressColor = (label: string) => {
@@ -128,6 +128,81 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   }, [refetchScreen, refetchEmotion, refetchRisk, refreshWellbeing]);
+
+  // Sincronizar notificaciones/alarmas para programas activos
+  React.useEffect(() => {
+    if (isProgramsLoading || !programs) return;
+
+    const syncNotifications = async () => {
+      try {
+        // 1. Obtener notificaciones programadas
+        const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+        
+        // 2. Cancelar notificaciones de programas (identificadas por prefijo 'program-')
+        const programNotifications = scheduled.filter(n => n.identifier.startsWith('program-'));
+        await Promise.all(programNotifications.map(n => Notifications.cancelScheduledNotificationAsync(n.identifier)));
+
+        for (const program of programs) {
+          if (!program.is_active) continue;
+
+          const [hourStr, minuteStr] = program.start_time.split(':');
+          const hour = parseInt(hourStr, 10);
+          const minute = parseInt(minuteStr, 10);
+
+          if (isNaN(hour) || isNaN(minute)) {
+            console.warn(`Invalid time for program ${program.id}: ${program.start_time}`);
+            continue;
+          }
+          
+          for (const day of program.days_of_week) {
+            // Mapeo: JS 0 (Dom) -> Expo 1 (Dom)
+            // JS 0-6 => Expo 1-7
+            const weekday = Number(day) + 1;
+            const identifier = `program-${program.id}-${day}`;
+            
+            try {
+              // En Android, el tipo 'calendar' a veces falla o requiere 'daily'/'weekly'.
+              // La documentación sugiere usar SchedulableTriggerInputTypes.WEEKLY para días específicos en Android si calendar falla.
+              // Sin embargo, lo más compatible multiplataforma para "repetir semanalmente" es usar trigger de día + hora.
+              // PERO, Expo en Android tiene limitaciones con 'calendar'.
+              // Solución: Usar 'weekly' si está disponible o fallback a 'daily' si es necesario, 
+              // pero la API unificada es 'calendar' (que falló).
+              // Intentaremos usar la interfaz simplificada que Expo recomienda para repeticiones:
+              // { hour, minute, repeats: true } es diario.
+              // Para semanal, necesitamos calcular el tiempo hasta el próximo día deseado o usar 'weekday' si el trigger lo soporta.
+              
+              // REVISIÓN: El error dice explícitamente "Trigger of type: calendar is not supported on Android".
+              // Esto significa que debemos usar 'daily' (diario) o 'weekly' (semanal).
+              // Expo Notifications en Android soporta 'daily' y 'weekly'.
+              
+              await Notifications.scheduleNotificationAsync({
+                identifier,
+                content: {
+                  title: `⏰ Recordatorio: ${program.title}`,
+                  body: `Es hora de tu programa "${program.title}". ¡Tómate un descanso!`,
+                  sound: true,
+                  priority: Notifications.AndroidNotificationPriority.HIGH,
+                },
+                trigger: {
+                  type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+                  weekday, // 1-7
+                  hour,
+                  minute,
+                },
+              });
+              console.log(`Scheduled notification for ${program.title} on weekday ${weekday} at ${hour}:${minute}`);
+            } catch (err) {
+              console.error(`Failed to schedule notification for ${program.title}:`, err);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error syncing program notifications:", error);
+      }
+    };
+
+    syncNotifications();
+  }, [programs, isProgramsLoading]);
 
   if (!isLoaded) {
     return (
@@ -323,6 +398,7 @@ export default function HomeScreen() {
             .map((program) => (
               <ProgramCard
                 key={program.id}
+                id={program.id}
                 title={program.title}
                 time={`${program.start_time} - ${program.end_time}`}
                 icon={program.icon}
