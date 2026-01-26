@@ -116,7 +116,6 @@ export function useScreenTimeSummary() {
       return data;
     },
     staleTime: 10_000,
-    refetchInterval: 15_000,
   });
 }
 
@@ -166,6 +165,5 @@ export function useBlockingRisk() {
       return data;
     },
     staleTime: 10_000,
-    refetchInterval: 15_000,
   });
 }

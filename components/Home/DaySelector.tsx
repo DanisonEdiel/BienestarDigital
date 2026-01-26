@@ -13,11 +13,13 @@ type Day = {
 type DaySelectorProps = {
   days: Day[];
   progressPercent?: number; // 0-100 dinámico
+  barColor?: string;
 };
  
-export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) => {
+export const DaySelector = ({ days, progressPercent = 75, barColor }: DaySelectorProps) => {
   const theme = useTheme();
   const animated = React.useRef(new Animated.Value(progressPercent)).current;
+  const activeColor = barColor || theme.colors.primary;
   
   React.useEffect(() => {
     Animated.timing(animated, {
@@ -34,7 +36,7 @@ export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) =>
 
   return (
      <View style={[styles.container, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }]}>
-       <View style={styles.daysRow}>
+       {/* <View style={styles.daysRow}>
          {days.map((day, index) => {
            if (day.active) {
              return (
@@ -57,12 +59,12 @@ export const DaySelector = ({ days, progressPercent = 75 }: DaySelectorProps) =>
              </View>
            );
          })}
-       </View>
+       </View> */}
        
        {/* Barra de progreso dinámica */}
        <View style={styles.progressContainer}>
           <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.surfaceVariant }]}>
-            <Animated.View style={[styles.progressBarFill, { width: widthInterpolate, backgroundColor: theme.colors.primary }]} />
+            <Animated.View style={[styles.progressBarFill, { width: widthInterpolate, backgroundColor: activeColor }]} />
           </View>
           <View style={styles.progressTextRow}>
              <Text style={[styles.progressLabel, { color: theme.colors.onSurfaceVariant }]}>Riesgo de bloqueo</Text>

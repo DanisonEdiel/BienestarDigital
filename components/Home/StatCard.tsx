@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme/spacing';
 import { useTheme } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
 type StatCardProps = {
   title: string;
@@ -10,20 +11,32 @@ type StatCardProps = {
   status?: string;
   children?: React.ReactNode;
   style?: object;
+  icon?: keyof typeof Ionicons.glyphMap;
+  accentColor?: string;
 };
 
-export const StatCard = ({ title, subtitle, value, status, children, style }: StatCardProps) => {
+export const StatCard = ({ title, subtitle, value, status, children, style, icon, accentColor }: StatCardProps) => {
   const theme = useTheme();
+  const activeColor = accentColor || theme.colors.primary;
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }, style]}>
+    <View style={[
+      styles.card, 
+      { 
+        backgroundColor: theme.colors.surface, 
+        borderColor: activeColor, // Semaforización en el borde
+        borderWidth: 1.5 // Un poco más grueso para que se note
+      }, 
+      style
+    ]}>
       <View style={styles.header}>
-        <View>
-          <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={[styles.title, { color: theme.colors.onSurface }]}>{title}</Text>
+            {icon && <Ionicons name={icon} size={18} color={activeColor} />}
+          </View>
           {subtitle && <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>{subtitle}</Text>}
         </View>
-        {/* Icon placeholder */}
-        <View style={[styles.iconDot, { backgroundColor: theme.colors.primary }]} />
       </View>
       
       <View style={styles.content}>
@@ -64,11 +77,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     marginTop: 2,
-  },
-  iconDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
   content: {
     flex: 1,

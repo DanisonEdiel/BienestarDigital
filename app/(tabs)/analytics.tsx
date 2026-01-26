@@ -144,7 +144,7 @@ export default function AnalyticsScreen() {
 
     const getIconAndCategory = (packageName: string) => {
       if (packageName.includes('tiktok')) {
-        return { iconName: 'logo-instagram' as const, category: 'Red social' };
+        return { iconName: 'logo-tiktok' as const, category: 'Red social' };
       }
       if (packageName.includes('instagram')) {
         return { iconName: 'logo-instagram' as const, category: 'Red social' };
