@@ -196,7 +196,7 @@ export default function ProgramFormScreen() {
           )}
         </View>
 
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Días Activos</Text>
           <View style={styles.daysGrid}>
             {DAY_LABELS.map((day, index) => {
@@ -219,7 +219,7 @@ export default function ProgramFormScreen() {
               );
             })}
           </View>
-        </View>
+        </View> */}
 
         <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Icono</Text>

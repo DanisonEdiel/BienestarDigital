@@ -14,12 +14,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider, configureFonts } from 'react-native-paper';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as Notifications from 'expo-notifications';
+import { AppThemeProvider, useThemeContext } from '@/context/ThemeContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -36,46 +36,9 @@ Notifications.setNotificationHandler({
 
 export const unstable_settings = {};
 
-export default function RootLayout() {
-  WebBrowser.maybeCompleteAuthSession();
-  const colorScheme = useColorScheme();
-  const [loaded, error] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
-  });
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  useEffect(() => {
-    (async () => {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-    })();
-  }, []);
-
-  if (!loaded && !error) {
-    return null;
-  }
-
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 60_000,
-      },
-    },
-  });
-
+function RootLayoutNav() {
+  const { colorScheme } = useThemeContext();
+  
   const base = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
   
   const fontConfig = {
@@ -95,24 +58,68 @@ export default function RootLayout() {
   };
 
   return (
+    <PaperProvider theme={paperTheme}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack initialRouteName="index">
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          <Stack.Screen name="auth" options={{ headerShown: false }} />
+          <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />
+          <Stack.Screen name="assistant" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      </ThemeProvider>
+    </PaperProvider>
+  );
+}
+
+export default function RootLayout() {
+  WebBrowser.maybeCompleteAuthSession();
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 60_000,
+      },
+    },
+  }));
+
+  const [loaded, error] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  useEffect(() => {
+    (async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      if (existingStatus !== 'granted') {
+        await Notifications.requestPermissionsAsync();
+      }
+    })();
+  }, []);
+
+  if (!loaded && !error) {
+    return null;
+  }
+
+  return (
     <ClerkProvider
       publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string}
       tokenCache={tokenCache}
     >
       <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={paperTheme}>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack initialRouteName="index">
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-              <Stack.Screen name="auth" options={{ headerShown: false }} />
-              <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />
-              <Stack.Screen name="assistant" options={{ headerShown: false }} />
-            </Stack>
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </PaperProvider>
+        <AppThemeProvider>
+          <RootLayoutNav />
+        </AppThemeProvider>
       </QueryClientProvider>
     </ClerkProvider>
   );

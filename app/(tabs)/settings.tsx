@@ -7,12 +7,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch } from 'react-native';
 import { SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeContext } from '@/context/ThemeContext';
 
 export default function SettingsScreen() {
   const theme = useTheme();
+  const { themeMode, setThemeMode, colorScheme } = useThemeContext();
   const insets = useSafeAreaInsets();
   const [limitTime, setLimitTime] = useState(() => {
     const d = new Date();
@@ -181,6 +183,20 @@ export default function SettingsScreen() {
             style={styles.segmentedButton}
             theme={{ colors: { secondaryContainer: theme.colors.secondaryContainer, onSecondaryContainer: theme.colors.onSecondaryContainer } }}
           />
+        </View>
+
+        {/* Apariencia */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Apariencia</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={[styles.label, { color: theme.colors.onSurface, marginBottom: 0 }]}>Modo oscuro</Text>
+            <Switch
+              value={colorScheme === 'dark'}
+              onValueChange={(val) => setThemeMode(val ? 'dark' : 'light')}
+              trackColor={{ false: theme.colors.surfaceVariant, true: theme.colors.primary }}
+              thumbColor={colorScheme === 'dark' ? theme.colors.onPrimary : theme.colors.outline}
+            />
+          </View>
         </View>
 
         <View style={styles.spacer} />

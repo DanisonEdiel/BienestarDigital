@@ -76,9 +76,9 @@ export default function AnalyticsScreen() {
     const maxScrolls = Math.max(...points.map(p => p.scrolls), 1);
 
     const getTrafficColor = (val: number) => {
-      if (val < 40) return '#4CAF50'; // Green (Bajo/Medio)
-      if (val < 75) return '#FF9800'; // Orange (Alto)
-      return '#F44336'; // Red (Muy Alto/Crítico)
+      if (val < 40) return '#4CAF50';
+      if (val < 75) return '#FF9800';
+      return '#F44336';
     };
 
     return points.map((p) => {

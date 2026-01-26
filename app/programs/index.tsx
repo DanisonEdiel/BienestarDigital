@@ -52,7 +52,7 @@ export default function ProgramsScreen() {
         />
       </View>
 
-      <View style={styles.daysContainer}>
+      {/* <View style={styles.daysContainer}>
         {DAY_LABELS.map((day, index) => {
           const isActive = item.days_of_week.includes(index);
           return (
@@ -75,7 +75,7 @@ export default function ProgramsScreen() {
             </View>
           );
         })}
-      </View>
+      </View> */}
 
       <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
