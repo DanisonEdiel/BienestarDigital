@@ -5,6 +5,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Text, TextInput, useTheme } from 'react-native-paper';
+import { measure } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
@@ -51,7 +52,14 @@ export default function ProgramFormScreen() {
         e.setHours(endH, endM, 0, 0);
         setEndTime(e);
 
-        setSelectedDays(program.days_of_week);
+        setSelectedDays(
+          program.days_of_week
+            .map(d => {
+              const val = Number(d);
+              return val === 7 ? 0 : val;
+            }) // Ensure number and map 7->0
+            .filter(d => !isNaN(d) && d >= 0 && d <= 6) // Ensure valid range
+        );
         setSelectedIcon(program.icon || 'hourglass-outline');
       }
     }
@@ -61,7 +69,7 @@ export default function ProgramFormScreen() {
     if (selectedDays.includes(index)) {
       setSelectedDays(selectedDays.filter(d => d !== index));
     } else {
-      setSelectedDays([...selectedDays, index].sort());
+      setSelectedDays([...selectedDays, index].sort((a, b) => a - b));
     }
   };
 
@@ -76,7 +84,14 @@ export default function ProgramFormScreen() {
       Alert.alert('Error', 'El título es obligatorio');
       return;
     }
-    if (selectedDays.length === 0) {
+    let processedDays = selectedDays.map(d => (d === 7 ? 0 : d));
+    
+    processedDays = processedDays.filter(d => Number.isInteger(d) && d >= 0 && d <= 6);
+
+    const uniqueDaysSet = new Set(processedDays);
+    const sanitizedDays = Array.from(uniqueDaysSet).sort((a, b) => a - b);
+
+    if (sanitizedDays.length === 0) {
       Alert.alert('Error', 'Selecciona al menos un día');
       return;
     }
@@ -86,7 +101,7 @@ export default function ProgramFormScreen() {
       description,
       startTime: formatTime(startTime),
       endTime: formatTime(endTime),
-      daysOfWeek: selectedDays,
+      daysOfWeek: sanitizedDays,
       icon: selectedIcon,
       isActive: true,
     };
@@ -96,13 +111,21 @@ export default function ProgramFormScreen() {
         { id: params.id as string, data },
         {
           onSuccess: () => router.back(),
-          onError: (err: any) => Alert.alert('Error', err.response?.data?.message || 'Error al actualizar'),
+          onError: (err: any) => {
+            const message = err.response?.data?.message;
+            const errorMsg = typeof message === 'string' ? message : 'Error al actualizar';
+            Alert.alert('Error', errorMsg);
+          },
         }
       );
     } else {
       createProgram(data, {
         onSuccess: () => router.back(),
-        onError: (err: any) => Alert.alert('Error', err.response?.data?.message || 'Error al crear'),
+        onError: (err: any) => {
+          const message = err.response?.data?.message;
+          const errorMsg = typeof message === 'string' ? message : 'Error al crear';
+          Alert.alert('Error', errorMsg);
+        },
       });
     }
   };
@@ -196,7 +219,7 @@ export default function ProgramFormScreen() {
           )}
         </View>
 
-        {/* <View style={styles.section}>
+        <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Días Activos</Text>
           <View style={styles.daysGrid}>
             {DAY_LABELS.map((day, index) => {
@@ -219,7 +242,7 @@ export default function ProgramFormScreen() {
               );
             })}
           </View>
-        </View> */}
+        </View>
 
         <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Icono</Text>

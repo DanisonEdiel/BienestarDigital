@@ -52,9 +52,15 @@ export default function ProgramsScreen() {
         />
       </View>
 
-      {/* <View style={styles.daysContainer}>
+      <View style={styles.daysContainer}>
         {DAY_LABELS.map((day, index) => {
-          const isActive = item.days_of_week.includes(index);
+          // Normalize days: convert to numbers, map 7->0 (Sunday)
+          const normalizedDays = item.days_of_week.map(d => {
+            const val = Number(d);
+            return val === 7 ? 0 : val;
+          });
+          const isActive = normalizedDays.includes(index);
+          
           return (
             <View
               key={index}
@@ -75,7 +81,7 @@ export default function ProgramsScreen() {
             </View>
           );
         })}
-      </View> */}
+      </View>
 
       <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 

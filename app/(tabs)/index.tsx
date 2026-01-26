@@ -477,18 +477,19 @@ const ScreenTimeCard = ({
 }) => {
   const [endTime, setEndTime] = React.useState<number | null>(null);
   const [hasNotified80, setHasNotified80] = React.useState(false);
-  const [timeLeft, setTimeLeft] = React.useState(0);
+  const [timeLeft, setTimeLeft] = React.useState(screenSummary?.remainingSeconds ?? 0);
 
   // Initialize/Update timer target when data fetches
   React.useEffect(() => {
     if (screenSummary && screenSummary.dailyLimitSeconds > 0) {
       // Calculate projected end time based on remaining seconds
       // We assume usage is continuous from now
-      const end = Date.now() + screenSummary.remainingSeconds * 1000;
+      const remaining = screenSummary.remainingSeconds;
+      const end = Date.now() + remaining * 1000;
       setEndTime(end);
-      setTimeLeft(screenSummary.remainingSeconds);
+      setTimeLeft(remaining);
     }
-  }, [screenSummary]);
+  }, [screenSummary?.dailyLimitSeconds, screenSummary?.remainingSeconds]);
 
   // Timer tick - updates timeLeft based on endTime
   React.useEffect(() => {
