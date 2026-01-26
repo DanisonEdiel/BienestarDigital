@@ -1,11 +1,11 @@
 import { CreateProgramDto, useCreateProgram, usePrograms, useUpdateProgram } from '@/hooks/usePrograms';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Button, HelperText, TextInput, useTheme, Text, ActivityIndicator } from 'react-native-paper';
+import { ActivityIndicator, Text, TextInput, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 const ICONS = ['hourglass-outline', 'book-outline', 'restaurant-outline', 'bed-outline', 'fitness-outline', 'game-controller-outline'];
@@ -111,6 +111,7 @@ export default function ProgramFormScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
