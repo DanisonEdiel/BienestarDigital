@@ -75,6 +75,12 @@ export default function AnalyticsScreen() {
     const maxTaps = Math.max(...points.map(p => p.taps), 1);
     const maxScrolls = Math.max(...points.map(p => p.scrolls), 1);
 
+    const getTrafficColor = (val: number) => {
+      if (val < 40) return '#4CAF50'; // Green (Bajo/Medio)
+      if (val < 75) return '#FF9800'; // Orange (Alto)
+      return '#F44336'; // Red (Muy Alto/Crítico)
+    };
+
     return points.map((p) => {
       // Adjust date to display correctly in local time (avoiding timezone shifts on label)
       // Since we constructed dates from local 'today', we can just parse the string parts
@@ -96,6 +102,8 @@ export default function AnalyticsScreen() {
         tapsRaw: p.taps,
         scrollsRaw: p.scrolls,
         isPeak,
+        tapsColor: getTrafficColor(tapsValue),
+        scrollsColor: getTrafficColor(scrollsValue) + '80', // 50% opacity for distinction
       };
     });
   }, [interactionHistory, todayMetrics]);
@@ -143,30 +151,81 @@ export default function AnalyticsScreen() {
     };
 
     const getIconAndCategory = (packageName: string) => {
-      if (packageName.includes('tiktok')) {
-        return { iconName: 'logo-tiktok' as const, category: 'Red social' };
+      const p = packageName.toLowerCase();
+      // Social Media
+      if (p.includes('tiktok')) {
+        return { iconUrl: 'https://img.icons8.com/color/96/tiktok--v1.png', category: 'Red social' };
       }
-      if (packageName.includes('instagram')) {
-        return { iconName: 'logo-instagram' as const, category: 'Red social' };
+      if (p.includes('instagram')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/instagram-new.png', category: 'Red social' };
       }
-      if (packageName.includes('facebook') || packageName.includes('orca')) {
-        return { iconName: 'logo-facebook' as const, category: 'Red social' };
+      if (p.includes('facebook') || p.includes('orca')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/facebook-new.png', category: 'Red social' };
       }
-      if (packageName.includes('whatsapp')) {
-        return { iconName: 'logo-whatsapp' as const, category: 'Mensajería' };
+      if (p.includes('twitter') || p.includes('x.')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/twitterx.png', category: 'Red social' };
       }
-      if (packageName.includes('youtube')) {
-        return { iconName: 'logo-youtube' as const, category: 'Video' };
+      if (p.includes('snapchat')) {
+         return { iconUrl: 'https://img.icons8.com/fluency/96/snapchat.png', category: 'Red social' };
       }
-      if (packageName.includes('twitter') || packageName.includes('x.')) {
-        return { iconName: 'logo-twitter' as const, category: 'Red social' };
+      if (p.includes('linkedin')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/linkedin.png', category: 'Profesional' };
       }
-      if (packageName.includes('chrome') || packageName.includes('brave') || packageName.includes('browser')) {
-        return { iconName: 'globe-outline' as const, category: 'Navegación' };
+      if (p.includes('pinterest')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/pinterest.png', category: 'Red social' };
       }
-      if (packageName.includes('settings') || packageName.includes('ajustes')) {
-        return { iconName: 'settings-outline' as const, category: 'Sistema' };
+      if (p.includes('reddit')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/reddit.png', category: 'Red social' };
       }
+
+      // Communication
+      if (p.includes('whatsapp')) {
+        return { iconUrl: 'https://img.icons8.com/color/96/whatsapp--v1.png', category: 'Mensajería' };
+      }
+      if (p.includes('telegram') || p.includes('org.telegram')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/telegram-app.png', category: 'Mensajería' };
+      }
+      if (p.includes('discord')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/discord-logo.png', category: 'Comunicación' };
+      }
+      if (p.includes('teams') || p.includes('microsoft.teams')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/microsoft-teams-2019.png', category: 'Trabajo' };
+      }
+      if (p.includes('gmail') || p.includes('android.gm')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/gmail.png', category: 'Productividad' };
+      }
+
+      // Entertainment & Media
+      if (p.includes('youtube')) {
+        return { iconUrl: 'https://img.icons8.com/color/96/youtube-play.png', category: 'Video' };
+      }
+      if (p.includes('spotify')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/spotify.png', category: 'Música' };
+      }
+      if (p.includes('netflix')) {
+         return { iconUrl: 'https://img.icons8.com/fluency/96/netflix.png', category: 'Entretenimiento' };
+      }
+      if (p.includes('twitch')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/twitch.png', category: 'Entretenimiento' };
+      }
+
+      // Tools & Utilities
+      if (p.includes('chrome') || p.includes('brave') || p.includes('browser')) {
+        return { iconUrl: 'https://img.icons8.com/color/96/chrome.png', category: 'Navegación' };
+      }
+      if (p.includes('maps') || p.includes('google.android.apps.maps')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/google-maps-new.png', category: 'Viajes' };
+      }
+      if (p.includes('uber')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/uber.png', category: 'Viajes' };
+      }
+      if (p.includes('amazon')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/amazon.png', category: 'Compras' };
+      }
+      if (p.includes('settings') || p.includes('ajustes')) {
+        return { iconUrl: 'https://img.icons8.com/fluency/96/settings.png', category: 'Sistema' };
+      }
+
       return { iconName: 'apps' as const, category: 'N/D' };
     };
 
@@ -179,7 +238,7 @@ export default function AnalyticsScreen() {
           : '0%';
 
       const baseName = getDisplayName(app.packageName, app.appName);
-      const { iconName, category } = getIconAndCategory(app.packageName.toLowerCase());
+      const { iconName, iconUrl, category } = getIconAndCategory(app.packageName.toLowerCase());
 
       return {
         name: baseName,
@@ -187,6 +246,7 @@ export default function AnalyticsScreen() {
         category,
         percentage,
         iconName,
+        iconUrl,
         color: theme.colors.primary,
       };
     });
@@ -240,11 +300,11 @@ export default function AnalyticsScreen() {
           <UsageChart data={chartData} />
       )}
 
-      {(isLoading || isFetching || refreshing) ? (
+      {/* {(isLoading || isFetching || refreshing) ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
         <StatSummaryRow stats={interactionStats} />
-      )}
+      )} */}
 
       {(isLoading || isFetching || refreshing) ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />

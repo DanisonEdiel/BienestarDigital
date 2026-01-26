@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { spacing } from '@/constants/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
@@ -10,6 +11,7 @@ type AppItem = {
   category: string;
   percentage?: string;
   iconName?: keyof typeof Ionicons.glyphMap;
+  iconUrl?: string;
   color?: string;
 };
 
@@ -33,12 +35,21 @@ export const AppUsageList = ({ apps }: AppUsageListProps) => {
               {app.category}
             </Text>
           </View>
-          <View style={[styles.iconContainer, { backgroundColor: app.color || theme.colors.surfaceVariant }]}>
-             <Ionicons
-               name={app.iconName || 'apps'}
-               size={24}
-               color={theme.colors.surface}
-             />
+          <View style={[styles.iconContainer, { backgroundColor: app.iconUrl ? 'transparent' : (app.color || theme.colors.surfaceVariant) }]}>
+             {app.iconUrl ? (
+                <Image
+                  source={{ uri: app.iconUrl }}
+                  style={styles.iconImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+             ) : (
+                <Ionicons
+                  name={app.iconName || 'apps'}
+                  size={24}
+                  color={theme.colors.surface}
+                />
+             )}
           </View>
         </View>
       ))}
@@ -86,8 +97,13 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 16, // Slightly squarer for app icons look
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  iconImage: {
+    width: '100%',
+    height: '100%',
   },
 });

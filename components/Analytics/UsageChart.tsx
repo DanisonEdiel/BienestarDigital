@@ -9,6 +9,8 @@ type ChartData = {
   tapsRaw: number;
   scrollsRaw: number;
   isPeak?: boolean;
+  tapsColor?: string;
+  scrollsColor?: string;
 };
 
 type UsageChartProps = {
@@ -50,7 +52,7 @@ export const UsageChart = ({ data }: UsageChartProps) => {
                         styles.barFill, 
                         { 
                           height: `${item.tapsValue}%`,
-                          backgroundColor: theme.colors.primary 
+                          backgroundColor: item.tapsColor || theme.colors.primary 
                         }
                       ]} 
                     />
@@ -65,7 +67,7 @@ export const UsageChart = ({ data }: UsageChartProps) => {
                         styles.barFill, 
                         { 
                           height: `${item.scrollsValue}%`,
-                          backgroundColor: theme.colors.secondary // Using secondary for scrolls
+                          backgroundColor: item.scrollsColor || theme.colors.secondary 
                         }
                       ]} 
                     />
@@ -81,11 +83,11 @@ export const UsageChart = ({ data }: UsageChartProps) => {
         {/* Legend */}
         <View style={styles.legendContainer}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.onSurface }]} />
             <Text style={[styles.legendText, { color: theme.colors.onSurfaceVariant }]}>Taps</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.legendDot, { backgroundColor: theme.colors.onSurface, opacity: 0.5 }]} />
             <Text style={[styles.legendText, { color: theme.colors.onSurfaceVariant }]}>Scrolls</Text>
           </View>
         </View>

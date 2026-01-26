@@ -8,12 +8,14 @@ import { typography } from "@/constants/theme/typography";
 import { useDigitalWellbeing } from "@/hooks/useDigitalWellbeing";
 import {
   useBlockingRisk,
-  useEmotionSummary,
   useScreenTimeSummary,
+  useEmotionSummary,
+  ScreenTimeSummary,
 } from "@/hooks/useMetrics";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -292,50 +294,11 @@ export default function HomeScreen() {
             )}
           </StatCard>
 
-          <StatCard
-            title="Tiempo uso"
-            subtitle="Hoy"
-            icon="time-outline"
-            accentColor={usageColor}
-            value={
-              screenSummary && screenSummary.dailyLimitSeconds > 0 ? (
-                isScreenLoading ? (
-                  "Cargando..."
-                ) : (
-                  <CountdownText
-                    seconds={screenSummary.remainingSeconds}
-                    color={theme.colors.onSurface}
-                  />
-                )
-              ) : (
-                "Sin límite configurado"
-              )
-            }
-          >
-            {isScreenLoading ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            ) : (
-              <CircularProgress
-                size={80}
-                strokeWidth={8}
-                percent={
-                  screenSummary && screenSummary.dailyLimitSeconds > 0
-                    ? screenSummary.usedPercent
-                    : 0
-                }
-                trackColor={theme.colors.surfaceVariant}
-                progressColor={usageColor}
-              >
-                <Text
-                  style={[styles.circleText, { color: theme.colors.onSurface }]}
-                >
-                  {screenSummary && screenSummary.dailyLimitSeconds > 0
-                    ? `${screenSummary.usedPercent}%`
-                    : "--"}
-                </Text>
-              </CircularProgress>
-            )}
-          </StatCard>
+          <ScreenTimeCard
+            screenSummary={screenSummary}
+            isLoading={isScreenLoading}
+            theme={theme}
+          />
         </View>
 
         {/* Programas */}
@@ -503,26 +466,57 @@ const styles = StyleSheet.create({
   },
 });
 
-const CountdownText = ({
-  seconds,
-  color,
+const ScreenTimeCard = ({
+  screenSummary,
+  isLoading,
+  theme,
 }: {
-  seconds: number;
-  color?: string;
+  screenSummary: ScreenTimeSummary | undefined;
+  isLoading: boolean;
+  theme: any;
 }) => {
-  const [timeLeft, setTimeLeft] = React.useState(seconds);
+  const [endTime, setEndTime] = React.useState<number | null>(null);
+  const [hasNotified80, setHasNotified80] = React.useState(false);
+  const [timeLeft, setTimeLeft] = React.useState(0);
 
+  // Initialize/Update timer target when data fetches
   React.useEffect(() => {
-    setTimeLeft(seconds);
-  }, [seconds]);
+    if (screenSummary && screenSummary.dailyLimitSeconds > 0) {
+      // Calculate projected end time based on remaining seconds
+      // We assume usage is continuous from now
+      const end = Date.now() + screenSummary.remainingSeconds * 1000;
+      setEndTime(end);
+      setTimeLeft(screenSummary.remainingSeconds);
+    }
+  }, [screenSummary]);
 
+  // Timer tick - updates timeLeft based on endTime
   React.useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (!endTime) return;
+
     const interval = setInterval(() => {
-      setTimeLeft((prev) => Math.max(0, prev - 1));
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+      setTimeLeft(remaining);
     }, 1000);
+
     return () => clearInterval(interval);
-  }, [timeLeft]);
+  }, [endTime]);
+
+  const dailyLimit = screenSummary?.dailyLimitSeconds ?? 0;
+  // Calculate percentage based on current timeLeft
+  // used = limit - remaining
+  const usedSeconds = Math.max(0, dailyLimit - timeLeft);
+  const percent =
+    dailyLimit > 0 ? Math.round((usedSeconds / dailyLimit) * 100) : 0;
+
+  const getScreenTimeColor = (p: number) => {
+    if (p < 75) return "#4CAF50";
+    if (p < 90) return "#FF9800";
+    return theme.colors.error;
+  };
+
+  const usageColor = getScreenTimeColor(percent);
 
   const formatTime = (totalSeconds: number) => {
     const h = Math.floor(totalSeconds / 3600);
@@ -530,8 +524,124 @@ const CountdownText = ({
     const s = totalSeconds % 60;
 
     if (h > 0) return `${h}h ${m}m ${s}s`;
-    return `${m}m ${s}s restantes`;
+    return `${m}m ${s}s`; 
   };
 
-  return <Text style={{ color }}>{formatTime(timeLeft)}</Text>;
+  // Notification Logic - Predictive Scheduling
+  React.useEffect(() => {
+    let notificationId: string | null = null;
+
+    async function schedulePrediction() {
+      if (dailyLimit <= 0 || !endTime) return;
+
+      // 80% usage means 20% remaining
+      const remainingAt80 = dailyLimit * 0.2;
+      const secondsUntil80 = timeLeft - remainingAt80;
+
+      // Calculate time string for notification body (static based on 80% limit)
+      const timeRemainingAt80 = formatTime(remainingAt80);
+
+      // If we are already past 80% (secondsUntil80 <= 0), notify now if not done
+      if (secondsUntil80 <= 0) {
+         if (!hasNotified80) {
+            // Check/Request permissions
+            const { status } = await Notifications.getPermissionsAsync();
+            if (status !== 'granted') {
+               const { status: newStatus } = await Notifications.requestPermissionsAsync();
+               if (newStatus !== 'granted') return;
+            }
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "⏳ Tiempo de uso al 80%",
+                body: `Te quedan ${timeRemainingAt80} restantes.`,
+                sound: true,
+              },
+              trigger: null, // Immediate
+            });
+            setHasNotified80(true);
+         }
+         return;
+      }
+
+      // If not yet at 80%, schedule it for the future
+      // Only schedule if we haven't notified yet
+      if (!hasNotified80) {
+         const { status } = await Notifications.getPermissionsAsync();
+         if (status !== 'granted') return; // Don't prompt permission in background logic, assume granted or skip
+
+         // Schedule for future
+         // secondsUntil80 is in seconds.
+         notificationId = await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "⏳ Tiempo de uso al 80%",
+              body: `Has alcanzado el 80% de tu límite diario. Te quedan ${timeRemainingAt80}.`,
+              sound: true,
+            },
+            trigger: { 
+               type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+               seconds: secondsUntil80 
+            },
+         });
+      }
+    }
+
+    schedulePrediction();
+
+    return () => {
+      if (notificationId) {
+        Notifications.cancelScheduledNotificationAsync(notificationId);
+      }
+    };
+  }, [endTime, dailyLimit, hasNotified80]); // Removed timeLeft from dependency to avoid rescheduling every second
+
+  // Need a separate effect to update hasNotified80 if we cross the threshold locally
+  // But since we scheduled it, the OS handles it. 
+  // However, if the user keeps the app open, we want to flag it as "done" so we don't reschedule.
+  React.useEffect(() => {
+     if (dailyLimit > 0 && percent >= 80 && !hasNotified80) {
+        setHasNotified80(true);
+     } else if (percent < 80 && hasNotified80) {
+        setHasNotified80(false);
+     }
+  }, [percent, dailyLimit]);
+
+
+  return (
+    <StatCard
+      title="Tiempo uso"
+      subtitle="Hoy"
+      icon="time-outline"
+      accentColor={usageColor}
+      value={
+        screenSummary && dailyLimit > 0 ? (
+          isLoading ? (
+            "Cargando..."
+          ) : (
+            <Text style={{ color: theme.colors.onSurface }}>
+              {formatTime(timeLeft)} restantes
+            </Text>
+          )
+        ) : (
+          "Sin límite configurado"
+        )
+      }
+    >
+      {isLoading ? (
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+      ) : (
+        <CircularProgress
+          size={80}
+          strokeWidth={8}
+          percent={dailyLimit > 0 ? percent : 0}
+          trackColor={theme.colors.surfaceVariant}
+          progressColor={usageColor}
+        >
+          <Text style={[styles.circleText, { color: theme.colors.onSurface }]}>
+            {dailyLimit > 0 ? `${percent}%` : "--"}
+          </Text>
+        </CircularProgress>
+      )}
+    </StatCard>
+  );
 };
