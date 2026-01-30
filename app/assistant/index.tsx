@@ -60,7 +60,7 @@ export default function AssistantScreen() {
             id: 'welcome',
             role: 'assistant',
             content:
-              'Hola, soy tu asistente de bienestar. ¿Cómo te sientes hoy? Cuéntame con tus propias palabras.',
+              'Hola, soy tu asistente de MindPause. ¿Cómo te sientes hoy? Cuéntame con tus propias palabras.',
           },
         ]);
       }
@@ -176,7 +176,7 @@ export default function AssistantScreen() {
             <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
           </TouchableOpacity>
           <View>
-            <Text style={[styles.title, { color: theme.colors.onSurface }]}>Asistente de bienestar</Text>
+            <Text style={[styles.title, { color: theme.colors.onSurface }]}>Asistente MindPause</Text>
             <Text style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>Cuenta cómo te sientes hoy</Text>
           </View>
           <View style={{ width: 32 }} />

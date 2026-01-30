@@ -1,8 +1,8 @@
-# Felicitas – App móvil (Expo)
+# MindPause – App móvil (Expo)
 
 ## Descripción
 
-Aplicación móvil para controlar el estres de los usuarios. Arquitectura preparada para integrar un backend posteriormente sin reescrituras en el front.
+Aplicación móvil para el bienestar digital y control de estrés. Arquitectura preparada para integrar un backend posteriormente sin reescrituras en el front.
 
 ## Estado actual
 
@@ -48,7 +48,7 @@ Aplicación móvil para controlar el estres de los usuarios. Arquitectura prepar
 - Allowlist de Redirect URLs:
   - Web: `http://localhost:8081/--/oauth-native-callback`
   - Expo Go: `exp://<IP>:<PORT>/--/oauth-native-callback`
-  - Dev build nativo: `hambapp://oauth-native-callback`
+  - Dev build nativo: `mindpause://oauth-native-callback`
 - Si hay bloqueos de CAPTCHA/Turnstile en dev, desactívalo temporalmente o usa Chrome sin bloqueos.
 
 ## Estructura relevante

@@ -42,7 +42,7 @@ export default function SignInScreen() {
         <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
           <Ionicons name="leaf" size={40} color={theme.colors.primary} />
         </View>
-        <ThemedText type="title" style={styles.brand}>Bienestar Digital</ThemedText>
+        <ThemedText type="title" style={styles.brand}>MindPause</ThemedText>
         <ThemedText style={styles.subtitle}>Tu bienestar es primero</ThemedText>
       </View>
 

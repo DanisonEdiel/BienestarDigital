@@ -22,7 +22,7 @@ const STEPS: Step[] = [
   {
     key: 'welcome',
     icon: 'hourglass-outline',
-    title: 'Bienestar Digital',
+    title: 'MindPause',
     subtitle: 'Recupera el control de tu tiempo y atención.',
     cta: 'Empezar',
   },

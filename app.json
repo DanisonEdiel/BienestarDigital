@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "HambApp",
-    "slug": "HambApp",
+    "name": "MindPause",
+    "slug": "MindPause",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "hambapp",
+    "scheme": "mindpause",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.hambapp.bienestardigital",
+      "package": "com.mindpause.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

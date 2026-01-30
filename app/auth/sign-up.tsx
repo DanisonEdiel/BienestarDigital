@@ -42,7 +42,7 @@ export default function SignUpScreen() {
           <Ionicons name="person-add-outline" size={40} color={theme.colors.primary} />
         </View>
         <ThemedText type="title" style={styles.brand}>Crear cuenta</ThemedText>
-        <ThemedText style={styles.subtitle}>Únete a Bienestar Digital</ThemedText>
+        <ThemedText style={styles.subtitle}>Únete a MindPause</ThemedText>
       </View>
 
       <View style={styles.formContainer}>
