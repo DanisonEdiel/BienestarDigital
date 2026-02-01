@@ -15,7 +15,7 @@ export interface DailyMetrics {
 export interface AppUsage {
   packageName: string;
   appName?: string;
-  totalTimeInForeground: number; // seconds
+  totalTimeInForeground: number;
 }
 
 export function useDigitalWellbeing() {
@@ -41,7 +41,6 @@ export function useDigitalWellbeing() {
         const accessibilityAllowed = await InteractionModule.isAccessibilityServiceEnabled();
         setHasAccessibility(accessibilityAllowed);
       }
-
       return usageAllowed;
     }
     return false;
@@ -61,7 +60,6 @@ export function useDigitalWellbeing() {
 
   const fetchData = async () => {
     if (!isSignedIn || !userId || Platform.OS !== 'android' || !InteractionModule) return;
-
     try {
       // 1. Retrieve daily interaction metrics fron native module
       const dailyMetrics = await InteractionModule.getDailyMetrics();
@@ -93,7 +91,6 @@ export function useDigitalWellbeing() {
           avgScrollSpeed: dailyMetrics.avgScrollSpeed || 0,
         });
       }
-
     } catch (error: any) {
       console.error('Failed to fetch/sync wellbeing data:', error?.response?.status, error?.response?.data || error.message);
     }
