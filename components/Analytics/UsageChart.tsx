@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
   },
+  
   tooltip: {
     backgroundColor: '#1C1C1E',
     paddingVertical: 4,
