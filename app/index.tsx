@@ -1,15 +1,15 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { colors } from '@/constants/theme/colors';
-import { useAuth } from '@clerk/clerk-expo';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Redirect, router } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { colors } from "@/constants/theme/colors";
+import { useAuth } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { Redirect, router } from "expo-router";
+import { useRef, useState } from "react";
+import { Dimensions, FlatList, StyleSheet, View } from "react-native";
+import { Button } from "react-native-paper";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 type Step = {
   key: string;
@@ -21,25 +21,25 @@ type Step = {
 
 const STEPS: Step[] = [
   {
-    key: 'welcome',
-    icon: 'hourglass-outline',
-    title: 'Bienestar Digital',
-    subtitle: 'Recupera el control de tu tiempo y atención.',
-    cta: 'Empezar',
+    key: "welcome",
+    icon: "hourglass-outline",
+    title: "Bienestar Digital",
+    subtitle: "Recupera el control de tu tiempo y atención.",
+    cta: "Empezar",
   },
   {
-    key: 'focus',
-    icon: 'leaf-outline',
-    title: 'Desconecta para conectar',
-    subtitle: 'Reduce el estrés y mejora tu presencia en el mundo real.',
-    cta: 'Continuar',
+    key: "focus",
+    icon: "leaf-outline",
+    title: "Desconecta para conectar",
+    subtitle: "Reduce el estrés y mejora tu presencia en el mundo real.",
+    cta: "Continuar",
   },
   {
-    key: 'stats',
-    icon: 'bar-chart-outline',
-    title: 'Visualiza tu progreso',
-    subtitle: 'Estadísticas claras para entender tus hábitos digitales.',
-    cta: 'Entrar',
+    key: "stats",
+    icon: "bar-chart-outline",
+    title: "Visualiza tu progreso",
+    subtitle: "Estadísticas claras para entender tus hábitos digitales.",
+    cta: "Entrar",
   },
 ];
 
@@ -49,7 +49,7 @@ export default function Onboarding() {
   const listRef = useRef<FlatList<Step>>(null);
 
   if (isSignedIn) {
-    return <Redirect href={'/(tabs)'} />;
+    return <Redirect href={"/(tabs)"} />;
   }
 
   const next = () => {
@@ -58,7 +58,7 @@ export default function Onboarding() {
       setIndex(i);
       listRef.current?.scrollToIndex({ index: i, animated: true });
     } else {
-      router.replace('/auth/sign-in');
+      router.replace("/auth/sign-in");
     }
   };
 
@@ -79,27 +79,34 @@ export default function Onboarding() {
         renderItem={({ item }) => (
           <View style={[styles.page, { width }]}>
             <View style={styles.iconWrap}>
-               <LinearGradient
-                  colors={['#E0EBFF', '#F5F9FF']}
-                  style={styles.iconBackground}
-                >
-                  <Ionicons name={item.icon} size={80} color={colors.primary} />
-                </LinearGradient>
+              <LinearGradient
+                colors={["#E0EBFF", "#F5F9FF"]}
+                style={styles.iconBackground}
+              >
+                <Ionicons name={item.icon} size={80} color={colors.primary} />
+              </LinearGradient>
             </View>
-            <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
+            <ThemedText type="title" style={styles.title}>
+              {item.title}
+            </ThemedText>
             <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
             <View style={styles.dots}>
               {STEPS.map((_, i) => (
-                <View key={i} style={[styles.dot, i === index ? styles.dotActive : undefined]} />
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    i === index ? styles.dotActive : undefined,
+                  ]}
+                />
               ))}
             </View>
-            <Button 
-              mode="contained" 
-              onPress={next} 
+            <Button
+              mode="contained"
+              onPress={next}
               style={styles.button}
               contentStyle={{ height: 50 }}
-              labelStyle={{ fontSize: 16, fontWeight: '600' }}
-
+              labelStyle={{ fontSize: 16, fontWeight: "600" }}
               buttonColor={colors.primary}
             >
               {item.cta}
@@ -115,8 +122,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   page: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 32,
   },
   iconWrap: {
@@ -126,24 +133,24 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 28,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
     color: colors.textPrimary,
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 48,
     lineHeight: 24,
   },
   dots: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 32,
     gap: 8,
   },
@@ -151,14 +158,14 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E5E5EA',
+    backgroundColor: "#E5E5EA",
   },
   dotActive: {
     backgroundColor: colors.primary,
     width: 24,
   },
   button: {
-    width: '100%',
+    width: "100%",
     borderRadius: 16,
   },
 });
