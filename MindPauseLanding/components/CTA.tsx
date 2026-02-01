@@ -1,38 +1,59 @@
 "use client";
 
 import { motion } from "motion/react";
+import { Apple, Smartphone } from "lucide-react";
 
 export default function CTA() {
   return (
-    <section className="py-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-primary opacity-10 dark:opacity-5 -z-10" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl -z-10" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/20 rounded-full blur-3xl -z-10" />
+    <section className="py-32 relative overflow-hidden bg-[#0F1115]">
+      {/* Background Gradients */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[120px] opacity-30" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] opacity-20" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] opacity-20" />
+      </div>
 
-      <div className="max-w-4xl mx-auto px-4 text-center">
+      <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
           viewport={{ once: true }}
+          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 md:p-20 shadow-2xl"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">¿Listo para recuperar tu vida?</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">
-            Únete a miles de personas que ya están mejorando su salud mental y productividad con MindPause.
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+            ¿Listo para recuperar <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">tu tiempo?</span>
+          </h2>
+          
+          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Únete a la comunidad de MindPause y empieza a construir una relación más saludable con tu tecnología hoy mismo.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-             <button className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-lg flex items-center justify-center gap-3 shadow-xl hover:opacity-90 transition-opacity">
-                {/* Apple Icon */}
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.45-1.64 3.98-1.54 1.29.08 2.8.52 3.76 1.89-3.23 1.95-2.66 6.36.98 7.72-.66 1.76-1.58 3.5-2.8 4.16zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-                App Store
-             </button>
-             <button className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-lg flex items-center justify-center gap-3 shadow-xl hover:opacity-90 transition-opacity">
-                {/* Google Play Icon */}
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
-                Google Play
-             </button>
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
+             <motion.button 
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               className="group relative overflow-hidden px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-xl transition-all"
+             >
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Apple className="w-6 h-6 z-10" />
+                <span className="z-10">App Store</span>
+             </motion.button>
+             
+             <motion.button 
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               className="group relative overflow-hidden px-8 py-4 bg-transparent border border-white/20 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/10 transition-all backdrop-blur-sm"
+             >
+                <Smartphone className="w-6 h-6" />
+                <span>Google Play</span>
+             </motion.button>
           </div>
+          
+          <p className="mt-8 text-sm text-gray-500">
+            Prueba gratuita de 14 días. Sin tarjeta de crédito requerida.
+          </p>
         </motion.div>
       </div>
     </section>
