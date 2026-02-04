@@ -18,15 +18,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React from "react";
-import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
 import { ActivityIndicator, Button, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -252,11 +245,18 @@ export default function HomeScreen() {
             </Text>
           </View>
           <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={theme.colors.onSurface}
-            />
+            {user?.imageUrl ? (
+              <Image
+                source={{ uri: user.imageUrl }}
+                style={{ width: 32, height: 32, borderRadius: 16 }}
+              />
+            ) : (
+              <Ionicons
+                name="person-circle-outline"
+                size={32}
+                color={theme.colors.onSurface}
+              />
+            )}
           </TouchableOpacity>
         </View>
 

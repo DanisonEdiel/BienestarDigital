@@ -15,6 +15,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider, configureFonts } from 'react-native-paper';
 import 'react-native-reanimated';
 
@@ -116,11 +117,13 @@ export default function RootLayout() {
       publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string}
       tokenCache={tokenCache}
     >
-      <QueryClientProvider client={queryClient}>
-        <AppThemeProvider>
-          <RootLayoutNav />
-        </AppThemeProvider>
-      </QueryClientProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <QueryClientProvider client={queryClient}>
+          <AppThemeProvider>
+            <RootLayoutNav />
+          </AppThemeProvider>
+        </QueryClientProvider>
+      </GestureHandlerRootView>
     </ClerkProvider>
   );
 }
