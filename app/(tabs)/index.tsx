@@ -1,6 +1,8 @@
 import { DaySelector } from "@/components/Home/DaySelector";
 import { ProgramCard } from "@/components/Home/ProgramCard";
 import { StatCard } from "@/components/Home/StatCard";
+import { RiskBreakdown } from "@/components/Home/RiskBreakdown";
+import { ShareCard } from "@/components/Home/ShareCard";
 import { ThemedView } from "@/components/themed-view";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { spacing } from "@/constants/theme/spacing";
@@ -267,6 +269,18 @@ export default function HomeScreen() {
           barColor={riskColor} 
           riskDetails={blockingRisk}
         />
+        
+        {/* Desglose de Riesgo (Deep Dive) */}
+        <RiskBreakdown riskData={blockingRisk} isLoading={isRiskLoading || isRiskFetching} />
+
+        {/* Share Card - Marketing Viral */}
+        {!isRiskLoading && !isRiskFetching && blockingRisk && (
+          <ShareCard 
+            screenTimePercent={screenSummary?.usedPercent || 0}
+            riskLevel={blockingRisk?.level || 'bajo'}
+          />
+        )}
+
         {isRiskLoading || isRiskFetching ? (
           <ActivityIndicator
             size="small"

@@ -1,15 +1,19 @@
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { AppUsageList } from '@/components/Analytics/AppUsageList';
 import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
 import { UsageChart } from '@/components/Analytics/UsageChart';
 import { spacing } from '@/constants/theme/spacing';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
-import { useInteractionHistory } from '@/hooks/useMetrics';
+import { useInteractionHistory, useBlockingRisk } from '@/hooks/useMetrics';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import React, { useMemo } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import React, { useMemo, useState, useRef } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Share, Alert } from 'react-native';
+import { useTheme, Button } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SocialShareView } from '@/components/Home/SocialShareView';
+import { typography } from '@/constants/theme/typography';
 
 const APPS_DATA_FALLBACK = [
   { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%' },
@@ -21,7 +25,10 @@ export default function AnalyticsScreen() {
   // ... existing code ...
   const { data: interactionHistory, isLoading, isFetching, refetch: refetchHistory } = useInteractionHistory('week');
   const { metrics: todayMetrics, appUsage: todayAppUsage, refresh: refreshWellbeing } = useDigitalWellbeing();
+  const { data: blockingRisk } = useBlockingRisk();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const viewRef = useRef<View>(null);
   const insets = useSafeAreaInsets();
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -272,8 +279,95 @@ export default function AnalyticsScreen() {
     ];
   }, [todayMetrics, todayAppUsage, theme.colors.primary]);
 
+  const handleShare = async () => {
+    try {
+      if (viewRef.current) {
+        const uri = await captureRef(viewRef, {
+          format: 'png',
+          quality: 0.8,
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+           await Sharing.shareAsync(uri);
+        } else {
+           // Fallback text
+           const level = blockingRisk?.level || 'low';
+           const screenPercent = blockingRisk?.usedPercent || 0;
+           const focusLevel = Math.max(0, Math.floor(100 - screenPercent));
+           await Share.share({
+             message: `🚀 Mi nivel de enfoque hoy: ${focusLevel}% con MindPause.`,
+           });
+        }
+      }
+      setShareModalVisible(false);
+    } catch (error: any) {
+      console.log("Error sharing image:", error);
+      Alert.alert("Error", "No se pudo compartir la imagen. Intentando texto...");
+       // Fallback text
+       try {
+         const level = blockingRisk?.level || 'low';
+         const screenPercent = blockingRisk?.usedPercent || 0;
+         const focusLevel = Math.max(0, Math.floor(100 - screenPercent));
+         await Share.share({
+           message: `🚀 Mi nivel de enfoque hoy: ${focusLevel}% con MindPause.`,
+         });
+       } catch (e) {}
+    }
+  };
+
+  const todayDate = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
+      
+      {/* Share Preview Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={shareModalVisible}
+        onRequestClose={() => setShareModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.elevation.level2 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.colors.onSurface }]}>Vista Previa</Text>
+              <TouchableOpacity onPress={() => setShareModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+              </TouchableOpacity>
+            </View>
+            
+            <View 
+              ref={viewRef}
+              collapsable={false}
+              style={styles.cardPreview}
+            >
+              <SocialShareView 
+                screenTimePercent={blockingRisk?.usedPercent || 0}
+                riskLevel={blockingRisk?.level || 'low'}
+                date={todayDate}
+              />
+            </View>
+
+            <Text style={[styles.modalNote, { color: theme.colors.onSurfaceVariant }]}>
+              Comparte este resumen con tus amigos o en redes sociales.
+            </Text>
+
+            <Button 
+              mode="contained" 
+              onPress={handleShare}
+              style={styles.shareButton}
+              icon="share-variant"
+            >
+              Compartir Ahora
+            </Button>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
       <Stack.Screen options={{ headerShown: false }} />
       
@@ -282,7 +376,7 @@ export default function AnalyticsScreen() {
            <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>Intensidad de uso</Text>
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => setShareModalVisible(true)}>
            <Ionicons name="share-social-outline" size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
       </View>
@@ -354,5 +448,52 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    borderRadius: 16,
+    padding: spacing.md,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    ...typography.h3,
+    fontSize: 18,
+  },
+  cardPreview: {
+    width: '100%',
+    marginBottom: spacing.md,
+    borderRadius: 12,
+    overflow: 'hidden',
+    // Shadow for depth
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modalNote: {
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    ...typography.body2,
+    opacity: 0.8,
+  },
+  shareButton: {
+    width: '100%',
+    borderRadius: 8,
   },
 });

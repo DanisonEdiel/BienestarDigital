@@ -144,8 +144,10 @@ export type BlockingRisk = {
   level: 'low' | 'medium' | 'high' | 'critical';
   usedPercent: number;
   totalInteractions: number;
+  avgScrollSpeed: number;
   emotionLevel: 'low' | 'medium' | 'high';
   usageDate: string;
+  nightUsage: boolean;
 };
 
 export function useBlockingRisk() {
