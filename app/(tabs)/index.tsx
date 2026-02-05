@@ -1,18 +1,16 @@
 import { DaySelector } from "@/components/Home/DaySelector";
 import { ProgramCard } from "@/components/Home/ProgramCard";
 import { StatCard } from "@/components/Home/StatCard";
-import { RiskBreakdown } from "@/components/Home/RiskBreakdown";
-import { ShareCard } from "@/components/Home/ShareCard";
 import { ThemedView } from "@/components/themed-view";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { spacing } from "@/constants/theme/spacing";
 import { typography } from "@/constants/theme/typography";
 import { useDigitalWellbeing } from "@/hooks/useDigitalWellbeing";
 import {
-  useBlockingRisk,
-  useScreenTimeSummary,
-  useEmotionSummary,
   ScreenTimeSummary,
+  useBlockingRisk,
+  useEmotionSummary,
+  useScreenTimeSummary,
 } from "@/hooks/useMetrics";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useUser } from "@clerk/clerk-expo";
@@ -20,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform } from "react-native";
+import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { ActivityIndicator, Button, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,6 +29,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
