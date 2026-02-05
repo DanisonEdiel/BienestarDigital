@@ -1,19 +1,18 @@
-import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
 import { AppUsageList } from '@/components/Analytics/AppUsageList';
-import { StatSummaryRow } from '@/components/Analytics/StatSummaryRow';
 import { UsageChart } from '@/components/Analytics/UsageChart';
+import { SocialShareView } from '@/components/Home/SocialShareView';
 import { spacing } from '@/constants/theme/spacing';
+import { typography } from '@/constants/theme/typography';
 import { useDigitalWellbeing } from '@/hooks/useDigitalWellbeing';
-import { useInteractionHistory, useBlockingRisk } from '@/hooks/useMetrics';
+import { useBlockingRisk, useInteractionHistory } from '@/hooks/useMetrics';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import React, { useMemo, useState, useRef } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Share, Alert } from 'react-native';
-import { useTheme, Button } from 'react-native-paper';
+import * as Sharing from 'expo-sharing';
+import React, { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SocialShareView } from '@/components/Home/SocialShareView';
-import { typography } from '@/constants/theme/typography';
+import { captureRef } from 'react-native-view-shot';
 
 const APPS_DATA_FALLBACK = [
   { name: 'TikTok', time: '2.0 h', category: 'Alto', percentage: '60%' },
@@ -22,7 +21,6 @@ const APPS_DATA_FALLBACK = [
 
 export default function AnalyticsScreen() {
   const theme = useTheme();
-  // ... existing code ...
   const { data: interactionHistory, isLoading, isFetching, refetch: refetchHistory } = useInteractionHistory('week');
   const { metrics: todayMetrics, appUsage: todayAppUsage, refresh: refreshWellbeing } = useDigitalWellbeing();
   const { data: blockingRisk } = useBlockingRisk();
@@ -44,7 +42,6 @@ export default function AnalyticsScreen() {
 
   // Process metrics for chart if available (based on interactions: taps + scrolls)
   const chartData = useMemo(() => {
-    // Generate the last 7 days including today
     const days: { date: string; taps: number; scrolls: number }[] = [];
     const today = new Date();
     
@@ -471,7 +468,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   modalTitle: {
-    ...typography.h3,
+    ...typography.sectionTitle,
     fontSize: 18,
   },
   cardPreview: {

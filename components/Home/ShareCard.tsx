@@ -37,15 +37,23 @@ export const ShareCard = ({ screenTimePercent, riskLevel }: ShareCardProps) => {
     try {
       setIsSharing(true);
       
+      // Pequeño delay para asegurar que la vista se renderice correctamente antes de capturar
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Capture the view as an image
       if (viewRef.current) {
         const uri = await captureRef(viewRef, {
           format: 'png',
-          quality: 0.8,
+          quality: 0.9,
+          result: 'tmpfile',
         });
 
         if (await Sharing.isAvailableAsync()) {
-           await Sharing.shareAsync(uri);
+           await Sharing.shareAsync(uri, {
+             mimeType: 'image/png',
+             dialogTitle: 'Compartir mi progreso en MindPause',
+             UTI: 'public.png'
+           });
         } else {
            // Fallback to text sharing if file sharing is not available
            const translatedRisk = getTranslatedRisk(riskLevel);
@@ -114,12 +122,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    ...typography.h3,
+    ...typography.sectionTitle,
     fontSize: 18,
     marginBottom: 4,
   },
   subtitle: {
-    ...typography.body2,
+    ...typography.subtitle,
     opacity: 0.8,
   },
   captureContainer: {

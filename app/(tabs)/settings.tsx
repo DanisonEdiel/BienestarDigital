@@ -103,6 +103,7 @@ export default function SettingsScreen() {
       });
 
       await queryClient.invalidateQueries({ queryKey: ['screen-time-summary'] });
+      await queryClient.invalidateQueries({ queryKey: ['blocking-risk'] });
 
       setSnackbarVisible(true);
     } catch (error) {

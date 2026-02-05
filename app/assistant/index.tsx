@@ -1,5 +1,6 @@
 import { spacing } from '@/constants/theme/spacing';
-import { useUser } from '@clerk/clerk-expo';
+import { api } from '@/lib/api';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -31,6 +32,7 @@ export default function AssistantScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -94,49 +96,25 @@ export default function AssistantScreen() {
     setSending(true);
 
     try {
-      // Use real OpenAI API
-      const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+      // Usar nuestro Backend propio (NestJS + Python AI)
+      // Esto asegura que el análisis de sentimientos sea real y procesado por nuestra IA
+      const token = await getToken();
       
-      if (!apiKey) {
-        throw new Error('OpenAI API Key not found');
-      }
-
       const apiMessages = nextMessages.map(m => ({
-        role: m.role === 'user' ? 'user' : 'assistant',
+        role: m.role,
         content: m.content
       }));
 
-      // Add system prompt for context
-      const systemPrompt = {
-        role: 'system',
-        content: `Eres un asistente de bienestar digital empático y profesional. 
-        Tu objetivo es ayudar al usuario a reflexionar sobre su bienestar emocional y digital.
-        El usuario se llama ${user.firstName || 'Usuario'}.
-        Responde de manera concisa, amable y en español.
-        Si detectas estrés o ansiedad, ofrece consejos breves de respiración o desconexión.`
-      };
+      const { data } = await api.post(
+        '/ai/mood-checkin', 
+        { messages: apiMessages },
+        { 
+          params: { clerkId: user.id },
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [systemPrompt, ...apiMessages],
-          temperature: 0.7,
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('OpenAI Error:', errorData);
-        throw new Error('Error en la respuesta de IA');
-      }
-
-      const data = await response.json();
-      const aiContent = data.choices[0]?.message?.content || 'No pude generar una respuesta.';
+      const aiContent = data.assistantMessage || 'No pude generar una respuesta.';
 
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
@@ -146,7 +124,49 @@ export default function AssistantScreen() {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error(error);
+      // Backend unavailable is expected in some environments; log warning instead of error to avoid noise
+      console.log('Backend AI unreachable, attempting fallback...');
+      
+      // Fallback: Try direct OpenAI if backend fails
+      const openAiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+      if (openAiKey) {
+        try {
+          console.log('Attempting fallback to OpenAI direct API...');
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${openAiKey}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-3.5-turbo',
+              messages: [
+                { role: 'system', content: 'Eres un asistente empático de salud mental llamado MindPause. Ayuda al usuario a reflexionar sobre sus emociones de manera breve y cálida.' },
+                ...nextMessages.map(m => ({ role: m.role, content: m.content }))
+              ],
+              max_tokens: 150
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`OpenAI direct API error: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const aiContent = data.choices[0]?.message?.content || 'No pude generar una respuesta.';
+
+          const assistantMessage: ChatMessage = {
+            id: `assistant-fallback-${Date.now()}`,
+            role: 'assistant',
+            content: aiContent,
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+          return; // Exit if fallback succeeded
+        } catch (fallbackError) {
+          console.error('Fallback to OpenAI also failed:', fallbackError);
+        }
+      }
+
       const fallback: ChatMessage = {
         id: `assistant-error-${Date.now()}`,
         role: 'assistant',

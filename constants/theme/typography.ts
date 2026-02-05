@@ -14,6 +14,11 @@ export const typography = {
     fontSize: 16,
     color: '#1C1C1E',
   },
+  body2: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 14,
+    color: '#1C1C1E',
+  },
   caption: {
     fontFamily: 'Poppins_400Regular',
     fontSize: 12,

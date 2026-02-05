@@ -273,14 +273,6 @@ export default function HomeScreen() {
         {/* Desglose de Riesgo (Deep Dive) */}
         <RiskBreakdown riskData={blockingRisk} isLoading={isRiskLoading || isRiskFetching} />
 
-        {/* Share Card - Marketing Viral */}
-        {!isRiskLoading && !isRiskFetching && blockingRisk && (
-          <ShareCard 
-            screenTimePercent={screenSummary?.usedPercent || 0}
-            riskLevel={blockingRisk?.level || 'bajo'}
-          />
-        )}
-
         {isRiskLoading || isRiskFetching ? (
           <ActivityIndicator
             size="small"

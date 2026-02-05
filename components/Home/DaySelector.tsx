@@ -36,16 +36,14 @@ export const DaySelector = ({ days, progressPercent = 75, barColor, riskDetails 
     outputRange: ['0%', '100%'],
   });
 
-  // Generar insight dinámico basado en los datos
   const getInsight = () => {
     if (!riskDetails) return "Analizando patrones de uso...";
 
     const { usedPercent, totalInteractions, emotionLevel, percent } = riskDetails;
 
-    // Prioridad a niveles críticos
     if (percent >= 75) {
-        if (emotionLevel === 'high') return "Tu nivel de estrés y uso elevado aumentan drásticamente el riesgo.";
-        if (totalInteractions > 1200) return "Demasiadas interacciones (taps/scrolls) están disparando el riesgo.";
+        if (emotionLevel === 'high') return "Tu nivel de uso elevado aumentan drásticamente el riesgo.";
+        if (totalInteractions > 1200) return "Demasiadas interacciones están disparando el riesgo.";
         if (usedPercent > 90) return "Has agotado casi todo tu tiempo de pantalla seguro.";
         return "Riesgo crítico de bloqueo. ¡Desconecta ya!";
     }
@@ -73,7 +71,6 @@ export const DaySelector = ({ days, progressPercent = 75, barColor, riskDetails 
          <Text style={[styles.percentage, { color: activeColor }]}>{Math.round(progressPercent)}%</Text>
        </View>
        
-       {/* Barra de progreso dinámica */}
        <View style={styles.progressContainer}>
           <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.surfaceVariant }]}>
             <Animated.View style={[styles.progressBarFill, { width: widthInterpolate, backgroundColor: activeColor }]} />
