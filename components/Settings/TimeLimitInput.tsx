@@ -45,33 +45,26 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
-
   inputContainer: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: 14,
+    backgroundColor: "#F2F2F7",
+    borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    height: 60,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    paddingHorizontal: spacing.md,
+    height: 56,
   },
-
   input: {
     flex: 1,
     fontSize: 16,
     color: colors.textPrimary,
-    textAlign: "left",
-    paddingVertical: 0,
+    textAlign: "center",
   },
-
   unit: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: "600",
-    marginLeft: spacing.xs,
+    fontSize: 16,
+    color: colors.textPrimary,
+    fontWeight: "500",
   },
 });
