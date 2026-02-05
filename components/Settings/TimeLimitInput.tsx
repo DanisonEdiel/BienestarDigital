@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { colors } from '@/constants/theme/colors';
-import { spacing } from '@/constants/theme/spacing';
+import { colors } from "@/constants/theme/colors";
+import { spacing } from "@/constants/theme/spacing";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 type TimeLimitInputProps = {
   hours: string;
@@ -10,7 +9,12 @@ type TimeLimitInputProps = {
   onMinutesChange: (val: string) => void;
 };
 
-export const TimeLimitInput = ({ hours, minutes, onHoursChange, onMinutesChange }: TimeLimitInputProps) => {
+export const TimeLimitInput = ({
+  hours,
+  minutes,
+  onHoursChange,
+  onMinutesChange,
+}: TimeLimitInputProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
@@ -39,28 +43,35 @@ export const TimeLimitInput = ({ hours, minutes, onHoursChange, onMinutesChange 
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
+
   inputContainer: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    height: 56,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    height: 60,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
   },
+
   input: {
     flex: 1,
     fontSize: 16,
     color: colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "left",
+    paddingVertical: 0,
   },
+
   unit: {
-    fontSize: 16,
-    color: colors.textPrimary,
-    fontWeight: '500',
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: "600",
+    marginLeft: spacing.xs,
   },
 });
