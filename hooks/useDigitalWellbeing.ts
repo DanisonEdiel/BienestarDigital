@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
-import { NativeModules, AppState, AppStateStatus, Platform } from 'react-native';
-import { useAuth } from '@clerk/clerk-expo';
 import { api } from '@/lib/api';
+import { useAuth } from '@clerk/clerk-expo';
+import { useEffect, useRef, useState } from 'react';
+import { AppState, AppStateStatus, NativeModules, Platform } from 'react-native';
 
 const { InteractionModule } = NativeModules;
 
@@ -15,7 +15,7 @@ export interface DailyMetrics {
 export interface AppUsage {
   packageName: string;
   appName?: string;
-  totalTimeInForeground: number; // seconds
+  totalTimeInForeground: number;
 }
 
 export function useDigitalWellbeing() {
@@ -41,7 +41,6 @@ export function useDigitalWellbeing() {
         const accessibilityAllowed = await InteractionModule.isAccessibilityServiceEnabled();
         setHasAccessibility(accessibilityAllowed);
       }
-
       return usageAllowed;
     }
     return false;
@@ -61,9 +60,8 @@ export function useDigitalWellbeing() {
 
   const fetchData = async () => {
     if (!isSignedIn || !userId || Platform.OS !== 'android' || !InteractionModule) return;
-
     try {
-      // 1. Get Interaction Metrics
+      // 1. Retrieve daily interaction metrics fron native module
       const dailyMetrics = await InteractionModule.getDailyMetrics();
       setMetrics(dailyMetrics);
 
@@ -73,7 +71,7 @@ export function useDigitalWellbeing() {
         const usage = await InteractionModule.getAppUsage();
         setAppUsage(usage);
         
-        // 3. Sync Usage to Backend
+        // 3. Sync Usage metrics with Backend service
         // Fix: nightUsage must be boolean, details removed if not in DTO or backend ignores it
         await api.post(`/metrics/usage?clerkId=${userId}`, {
              usageDate: dailyMetrics.recordDate,
@@ -93,7 +91,6 @@ export function useDigitalWellbeing() {
           avgScrollSpeed: dailyMetrics.avgScrollSpeed || 0,
         });
       }
-
     } catch (error: any) {
       console.error('Failed to fetch/sync wellbeing data:', error?.response?.status, error?.response?.data || error.message);
     }

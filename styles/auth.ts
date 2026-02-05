@@ -1,6 +1,8 @@
 import { StyleSheet } from 'react-native';
 
+
 export const signInStyles = StyleSheet.create({
+  
   container: { flex: 1, padding: 20 },
   header: { paddingVertical: 28, paddingHorizontal: 8, alignItems: 'flex-start', marginBottom: 16 },
   brand: { textAlign: 'left', fontSize: 24, fontWeight: '700' },
