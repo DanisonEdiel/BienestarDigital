@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import { useUser, useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useQuery } from '@tanstack/react-query';
 
 export type UsageMetric = {
@@ -24,7 +24,7 @@ export type WellnessRecommendation = {
   id: number;
   title: string;
   content: string;
-  type: string; // e.g., 'activity', 'article'
+  type: string; //'activity', 'article', etc.
 };
 
 export type ScreenTimeSummary = {
@@ -94,6 +94,7 @@ export function useWellnessRecommendations() {
         params: { clerkId: user!.id },
         headers: { Authorization: `Bearer ${token}` }
       });
+
       return data;
     },
   });
@@ -113,6 +114,7 @@ export function useScreenTimeSummary() {
         params: { clerkId: user!.id },
         headers,
       });
+
       return data;
     },
     staleTime: 10_000,
@@ -133,6 +135,7 @@ export function useEmotionSummary() {
         params: { clerkId: user!.id },
         headers,
       });
+
       return data;
     },
     staleTime: 30_000,
@@ -164,6 +167,7 @@ export function useBlockingRisk() {
         params: { clerkId: user!.id },
         headers,
       });
+
       return data;
     },
     staleTime: 10_000,

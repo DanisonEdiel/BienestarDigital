@@ -8,7 +8,7 @@ import { useRef, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 type Step = {
   key: string;
@@ -27,18 +27,18 @@ const STEPS: Step[] = [
     cta: 'Empezar',
   },
   {
-    key: 'focus',
-    icon: 'leaf-outline',
-    title: 'Desconecta para conectar',
-    subtitle: 'Reduce el estrés y mejora tu presencia en el mundo real.',
-    cta: 'Continuar',
+    key: "focus",
+    icon: "leaf-outline",
+    title: "Desconecta para conectar",
+    subtitle: "Reduce el estrés y mejora tu presencia en el mundo real.",
+    cta: "Continuar",
   },
   {
-    key: 'stats',
-    icon: 'bar-chart-outline',
-    title: 'Visualiza tu progreso',
-    subtitle: 'Estadísticas claras para entender tus hábitos digitales.',
-    cta: 'Entrar',
+    key: "stats",
+    icon: "bar-chart-outline",
+    title: "Visualiza tu progreso",
+    subtitle: "Estadísticas claras para entender tus hábitos digitales.",
+    cta: "Entrar",
   },
 ];
 
@@ -49,7 +49,7 @@ export default function Onboarding() {
   const theme = useTheme();
 
   if (isSignedIn) {
-    return <Redirect href={'/(tabs)'} />;
+    return <Redirect href={"/(tabs)"} />;
   }
 
   const next = () => {
@@ -58,7 +58,7 @@ export default function Onboarding() {
       setIndex(i);
       listRef.current?.scrollToIndex({ index: i, animated: true });
     } else {
-      router.replace('/auth/sign-in');
+      router.replace("/auth/sign-in");
     }
   };
 
@@ -86,7 +86,9 @@ export default function Onboarding() {
                   <Ionicons name={item.icon} size={80} color={theme.colors.primary} />
                 </LinearGradient>
             </View>
-            <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
+            <ThemedText type="title" style={styles.title}>
+              {item.title}
+            </ThemedText>
             <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
             <View style={styles.dots}>
               {STEPS.map((_, i) => (
@@ -100,9 +102,9 @@ export default function Onboarding() {
                 />
               ))}
             </View>
-            <Button 
-              mode="contained" 
-              onPress={next} 
+            <Button
+              mode="contained"
+              onPress={next}
               style={styles.button}
               contentStyle={{ height: 50 }}
               labelStyle={{ fontSize: 16, fontWeight: '600' }}
@@ -121,8 +123,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   page: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 32,
   },
   iconWrap: {
@@ -132,22 +134,22 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 28,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
     marginBottom: 48,
     lineHeight: 24,
   },
   dots: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 32,
     gap: 8,
   },
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     width: 24,
   },
   button: {
-    width: '100%',
+    width: "100%",
     borderRadius: 16,
   },
 });

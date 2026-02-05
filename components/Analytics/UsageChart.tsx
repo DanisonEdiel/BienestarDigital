@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     fontSize: 12,
   },
+  
   tooltip: {
     paddingVertical: 4,
     paddingHorizontal: 8,

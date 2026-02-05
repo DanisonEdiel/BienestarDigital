@@ -43,15 +43,15 @@ export const TimeLimitInput = ({ hours, minutes, onHoursChange, onMinutesChange 
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     marginTop: spacing.sm,
   },
   inputContainer: {
     flex: 1,
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     height: 56,
   },
