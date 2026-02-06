@@ -6,12 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Image, StyleSheet, View } from 'react-native';
 import { Button, Checkbox, HelperText, TextInput, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SignInScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,11 +40,13 @@ export default function SignInScreen() {
 
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-          <Ionicons name="leaf" size={40} color={theme.colors.primary} />
-        </View>
+        <Image 
+          source={require('../../assets/MindPause.png')} 
+          style={styles.logo}
+        />
         <ThemedText type="title" style={styles.brand}>MindPause</ThemedText>
         <ThemedText style={styles.subtitle}>Tu bienestar es primero</ThemedText>
       </View>
@@ -141,12 +146,12 @@ export default function SignInScreen() {
             Google
           </Button>
 
-          <View style={styles.createAccount}>
+          {/* <View style={styles.createAccount}>
             <ThemedText>¿No tienes cuenta? </ThemedText>
             <Link href="/auth/sign-up">
               <ThemedText type="link" style={{ color: theme.colors.primary, fontWeight: '600' }}>Crear cuenta</ThemedText>
             </Link>
-          </View>
+          </View> */}
         </View>
       </View>
     </ThemedView>
@@ -156,17 +161,15 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: spacing.lg },
   header: {
-    marginTop: spacing.xl * 2,
+    marginTop: spacing.md,
     marginBottom: spacing.xl,
     alignItems: 'center',
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  logo: {
+    width: 140,
+    height: 140,
     marginBottom: spacing.md,
+    resizeMode: 'contain',
   },
   brand: { 
     fontSize: 28, 

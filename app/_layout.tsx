@@ -20,6 +20,8 @@ import { MD3DarkTheme, MD3LightTheme, Provider as PaperProvider, configureFonts 
 import 'react-native-reanimated';
 
 import * as Notifications from 'expo-notifications';
+import * as SystemUI from 'expo-system-ui';
+import { Platform } from 'react-native';
 import { AppThemeProvider, useThemeContext } from '@/context/ThemeContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -42,19 +44,21 @@ function RootLayoutNav() {
   
   const base = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
   
-  const fontConfig = {
+  const baseFontConfig = {
     fontFamily: 'Poppins_400Regular',
   };
 
   const paperTheme = {
     ...base,
-    fonts: configureFonts({ config: fontConfig }),
+    fonts: configureFonts({ config: baseFontConfig }),
     colors: {
       ...base.colors,
       primary: Palette.primary,
       background: colorScheme === 'dark' ? Palette.backgroundDark : Palette.backgroundLight,
       surface: colorScheme === 'dark' ? Palette.surfaceDark : Palette.surfaceLight,
       onSurface: colorScheme === 'dark' ? Colors.dark.text : Colors.light.text,
+      // Asegurar que los componentes de Paper usen el color correcto
+      surfaceVariant: colorScheme === 'dark' ? Palette.surfaceDark : '#E7E0EC', 
     },
   };
 
@@ -69,7 +73,7 @@ function RootLayoutNav() {
           <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />
           <Stack.Screen name="assistant" options={{ headerShown: false }} />
         </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} translucent backgroundColor="transparent" />
       </ThemeProvider>
     </PaperProvider>
   );
@@ -96,6 +100,9 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
+    }
+    if (Platform.OS === 'android') {
+      SystemUI.setBackgroundColorAsync('transparent');
     }
   }, [loaded, error]);
 

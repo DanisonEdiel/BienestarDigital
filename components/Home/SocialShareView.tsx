@@ -8,7 +8,7 @@ import { spacing } from '@/constants/theme/spacing';
 
 interface SocialShareViewProps {
   screenTimePercent: number;
-  riskLevel: string; // 'low', 'medium', 'high'
+  riskLevel: string;
   date: string;
 }
 
@@ -17,26 +17,26 @@ export const SocialShareView = ({ screenTimePercent, riskLevel, date }: SocialSh
   
   const focusLevel = Math.max(0, Math.floor(100 - screenTimePercent));
   
-  // Colores menos saturados para modo oscuro (Pastel/Soft tones)
-  let riskColor = '#81C784'; // Soft Green
+
+  let riskColor = '#81C784';
   let riskText = 'Bajo';
   let riskIcon: keyof typeof Ionicons.glyphMap = 'shield-checkmark';
 
   if (riskLevel === 'medium') {
-    riskColor = '#FFB74D'; // Soft Orange
+    riskColor = '#FFB74D';
     riskText = 'Medio';
     riskIcon = 'warning';
   } else if (riskLevel === 'high') {
-    riskColor = '#E57373'; // Soft Red
+    riskColor = '#E57373';
     riskText = 'Alto';
     riskIcon = 'alert-circle';
   } else if (riskLevel === 'critical') {
-    riskColor = '#EF5350'; // Red
+    riskColor = '#EF5350';
     riskText = 'Crítico';
     riskIcon = 'alert-circle';
   }
 
-  // Fondo oscuro limpio y profesional
+
   const cardBackground = ['#121212', '#1E1E1E'] as const;
   const textColor = '#FFFFFF';
 
@@ -58,10 +58,8 @@ export const SocialShareView = ({ screenTimePercent, riskLevel, date }: SocialSh
             />
             <Text style={[styles.appName, { color: textColor }]}>MindPause</Text>
           </View>
-          <Text style={[styles.date, { color: 'rgba(255,255,255,0.6)' }]}>{date}</Text>
         </View>
 
-        {/* Content Container - Minimalista */}
         <View style={styles.contentContainer}>
             {/* Main Stat */}
             <View style={styles.statContainer}>
@@ -69,7 +67,6 @@ export const SocialShareView = ({ screenTimePercent, riskLevel, date }: SocialSh
               <Text style={[styles.focusLabel, { color: riskColor }]}>Nivel de Enfoque</Text>
             </View>
 
-            {/* Risk Indicator - Simple */}
             <View style={styles.riskContainer}>
               <View style={styles.riskRow}>
                 <Ionicons name={riskIcon} size={24} color={riskColor} />
@@ -79,7 +76,6 @@ export const SocialShareView = ({ screenTimePercent, riskLevel, date }: SocialSh
             </View>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={[styles.hashtags, { color: 'rgba(255,255,255,0.4)' }]}>
             #MindPause #BienestarDigital
@@ -94,7 +90,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     aspectRatio: 4/5,
-    borderRadius: 0, // Sin redondeo
+    borderRadius: 0,
     overflow: 'hidden',
     backgroundColor: '#121212',
   },
@@ -119,14 +115,14 @@ const styles = StyleSheet.create({
     height: 32,
   },
   appName: {
-    // Usando typography.title existente
+  
     fontFamily: typography.title.fontFamily,
     fontSize: 18,
     fontWeight: '600',
     letterSpacing: 0.5,
   },
   date: {
-    // Usando typography.caption
+  
     fontFamily: typography.caption.fontFamily,
     fontSize: 11,
     textTransform: 'uppercase',
@@ -145,7 +141,7 @@ const styles = StyleSheet.create({
   },
   focusValue: {
     fontFamily: typography.title.fontFamily,
-    fontSize: 80, // Reducido para evitar superposiciones
+    fontSize: 80,
     lineHeight: 80,
     includeFontPadding: false,
     marginBottom: spacing.xs,
@@ -163,7 +159,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: spacing.md,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)', // Sutil fondo para separar visualmente
+    backgroundColor: 'rgba(255,255,255,0.05)',
     width: '100%',
   },
   riskRow: {
